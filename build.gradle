@@ -11,6 +11,7 @@ project.ext.lwjglNatives = "natives-windows"
 
 repositories {
     mavenCentral()
+    maven { url = 'https://dl.bintray.com/jmonkeyengine/org.jmonkeyengine/' }
     flatDir {
         dir("libs")
     }
@@ -32,10 +33,18 @@ dependencies {
     extraLibs platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     // TODO: extralibs depends on choice of physics engine
-    // https://mvnrepository.com/artifact/org.jmonkeyengine/jme3-bullet
+//    implementation group: 'com.github.stephengold', name: 'jbullet', version: '1.0.2'
+    // https://mvnrepository.com/artifact/com.github.stephengold/Libbulletjme
+    implementation group: 'com.github.stephengold', name: 'Libbulletjme', version: '21.1.0'
     implementation group: 'org.jmonkeyengine', name: 'jme3-bullet', version: '3.3.2-stable'
+    implementation group: 'org.jmonkeyengine', name: 'jme3-bullet-native', version: '3.3.2-stable'
+
     // https://mvnrepository.com/artifact/de.fabmax/physx-jni
     implementation group: 'de.fabmax', name: 'physx-jni', version: '2.3.2'
+    runtimeOnly("de.fabmax:physx-jni:2.3.2:natives-windows")
+    runtimeOnly("de.fabmax:physx-jni:2.3.2:natives-linux")
+    runtimeOnly("de.fabmax:physx-jni:2.3.2:natives-macos")
+    runtimeOnly("de.fabmax:physx-jni:2.3.2:natives-macos-arm64")
 
     // cores
     extraLibs "org.lwjgl:lwjgl"

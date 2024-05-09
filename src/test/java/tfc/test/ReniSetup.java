@@ -1,3 +1,5 @@
+package tfc.test;
+
 import org.lwjgl.vulkan.*;
 import tfc.renirol.ReniContext;
 import tfc.renirol.Renirol;
@@ -5,7 +7,6 @@ import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.hardware.device.support.image.ReniSwapchainCapabilities;
 import tfc.renirol.frontend.hardware.util.DeviceQuery;
 import tfc.renirol.frontend.hardware.util.ReniHardwareCapability;
-import tfc.renirol.frontend.rendering.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.rendering.framebuffer.SwapChain;
 import tfc.renirol.frontend.rendering.selectors.ChannelInfo;
 import tfc.renirol.frontend.rendering.selectors.FormatSelector;
@@ -73,8 +74,8 @@ public class ReniSetup {
                         GRAPHICS_CONTEXT.getHardware().createLogical()
                                 .enableIfPossible(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
                                 .enableIfPossible(NVLowLatency.VK_NV_LOW_LATENCY_EXTENSION_NAME)
-                                // TODO: should probably support shared pairs
-                                // i.e. split(shared(GRAPHICS, TRANSFER), shared(COMPUTE, TRANSFER))
+                                // TODO: should probably support tfc.test.shared pairs
+                                // i.e. split(tfc.test.shared(GRAPHICS, TRANSFER), tfc.test.shared(COMPUTE, TRANSFER))
                                 .requestSharedIndices(
                                         // if compute pipeline is supported, then use it
                                         // elsewise, do not
@@ -89,12 +90,12 @@ public class ReniSetup {
 
     public static final FormatSelector selector = new FormatSelector()
             .channels(
-                    new ChannelInfo('r', 8, 16, 32),
-                    new ChannelInfo('g', 8, 16, 32),
-                    new ChannelInfo('b', 8, 16, 32)
+                    new ChannelInfo('r', 16, 10, 8, 32),
+                    new ChannelInfo('g', 16, 10, 8, 32),
+                    new ChannelInfo('b', 16, 10, 8, 32)
             )
             .type("SRGB");
-    public static final int DEPTH_FORMAT = VK13.VK_FORMAT_D16_UNORM;
+    public static final int DEPTH_FORMAT = VK13.VK_FORMAT_D32_SFLOAT;
 
     public static void initialize() {
         WINDOW.pollSize();

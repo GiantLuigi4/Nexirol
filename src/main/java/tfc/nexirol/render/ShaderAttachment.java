@@ -9,6 +9,7 @@ import tfc.renirol.util.ShaderCompiler;
 
 import java.util.Arrays;
 
+// TODO: move to reni
 public class ShaderAttachment {
     final Shader shader;
 

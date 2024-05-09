@@ -13,6 +13,6 @@ layout(binding = 0) uniform Matrices {
 
 void main() {
     fgCoord = Position;
-    gl_Position = Position;
-//    gl_Position = projectionMatrix * modelViewMatrix * Position;
+//    gl_Position = Position;
+    gl_Position = projectionMatrix * mat4(mat3(modelViewMatrix)) * Position;
 }

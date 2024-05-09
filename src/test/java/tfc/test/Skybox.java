@@ -1,15 +1,14 @@
-import data.VertexElements;
-import data.VertexFormats;
+package tfc.test;
+
+import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
+import tfc.test.data.VertexFormats;
 import org.joml.Matrix4f;
-import org.joml.Options;
 import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.shaderc.Shaderc;
-import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VK13;
 import org.lwjgl.vulkan.VkDevice;
 import tfc.nexirol.math.Matrices;
+import tfc.nexirol.primitives.CubePrimitive;
 import tfc.nexirol.render.ShaderAttachment;
 import tfc.nexirol.render.SmartShader;
 import tfc.nexirol.render.UniformData;
@@ -18,36 +17,25 @@ import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
-import tfc.renirol.frontend.rendering.command.shader.Shader;
 import tfc.renirol.frontend.rendering.enums.*;
 import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
 import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.rendering.enums.format.AttributeFormat;
-import tfc.renirol.frontend.rendering.enums.format.BitDepth;
-import tfc.renirol.frontend.rendering.enums.format.TextureChannels;
-import tfc.renirol.frontend.rendering.enums.format.TextureFormat;
 import tfc.renirol.frontend.rendering.enums.masks.DynamicStateMasks;
-import tfc.renirol.frontend.rendering.enums.modes.image.FilterMode;
-import tfc.renirol.frontend.rendering.enums.modes.image.MipmapMode;
-import tfc.renirol.frontend.rendering.enums.modes.image.WrapMode;
+import tfc.renirol.frontend.rendering.enums.modes.CullMode;
 import tfc.renirol.frontend.rendering.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.rendering.pass.RenderPass;
 import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
-import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
 import tfc.renirol.frontend.rendering.resource.descriptor.*;
-import tfc.renirol.frontend.rendering.resource.image.texture.Texture;
-import tfc.renirol.frontend.rendering.resource.image.texture.TextureSampler;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.renirol.util.ShaderCompiler;
 
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
-public class PrimaryTest {
+public class Skybox {
     public static final UniformData matrices = new UniformData(
             new DataFormat(
                     new DataElement(NumericPrimitive.FLOAT, 4 * 4),
@@ -108,8 +96,9 @@ public class PrimaryTest {
 
         final ShaderCompiler compiler = new ShaderCompiler();
         compiler.setupGlsl();
+        compiler.debug();
         ImportProcessor processor = new ImportProcessor(
-                (fl) -> PrimaryTest.class.getClassLoader().getResourceAsStream(fl)
+                (fl) -> Skybox.class.getClassLoader().getResourceAsStream(fl)
         );
         ShaderAttachment[] SKY_ATTACHMENTS;
         SmartShader SKY = new SmartShader(
@@ -119,14 +108,14 @@ public class PrimaryTest {
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.VERTEX,
-                                read(PrimaryTest.class.getClassLoader().getResourceAsStream("shader/defaults/sky.vsh")),
+                                read(Skybox.class.getClassLoader().getResourceAsStream("shader/defaults/sky.vsh")),
                                 "sky", "main"
                         ),
                         new ShaderAttachment(
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.FRAGMENT,
-                                read(PrimaryTest.class.getClassLoader().getResourceAsStream("shader/defaults/sky.fsh")),
+                                read(Skybox.class.getClassLoader().getResourceAsStream("shader/defaults/sky.fsh")),
                                 "sky", "main"
                         )
                 },
@@ -134,10 +123,10 @@ public class PrimaryTest {
         );
 
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
-        state.depthTest(true).depthMask(true);
+        state.depthTest(true).depthMask(false);
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT);
 
-        DataFormat format = VertexFormats.POS4;
+        DataFormat format = VertexFormats.POS4_NORMAL3;
 
         final BufferDescriptor desc0 = new BufferDescriptor(format);
         desc0.describe(0);
@@ -160,37 +149,21 @@ public class PrimaryTest {
 //            );
 //
 //            layout = new DescriptorLayout(
-//                    ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+//                    tfc.test.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
 //                    0, info
 //            );
 //
 //            info.destroy();
 //        }
 //        DescriptorSet set = new DescriptorSet(
-//                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+//                tfc.test.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
 //                pool, layout
 //        );
 //        state.descriptorLayouts(layout);
 
-        final GPUBuffer vbo = new GPUBuffer(ReniSetup.GRAPHICS_CONTEXT.getLogical(), desc0, BufferUsage.VERTEX, 8);
-        final GPUBuffer ibo = new GPUBuffer(ReniSetup.GRAPHICS_CONTEXT.getLogical(), IndexSize.INDEX_16, BufferUsage.INDEX, 12);
-        vbo.allocate();
-        ibo.allocate();
-        final ByteBuffer buffer1 = vbo.createByteBuf();
-        final ByteBuffer indices = ibo.createByteBuf();
-        indices.asShortBuffer().put(new short[]{
-                0, 1, 2,
-                3, 1, 0,
-
-                4, 5, 6,
-                7, 5, 4,
-        });
-        ibo.upload(0, indices);
-        MemoryUtil.memFree(indices);
-
 //        InputStream is = PrimaryTest.class.getClassLoader().getResourceAsStream("test/texture/texture.png");
 //        Texture texture = new Texture(
-//                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+//                tfc.test.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
 //                TextureFormat.PNG, TextureChannels.RGBA,
 //                BitDepth.DEPTH_8, is
 //        );
@@ -214,6 +187,11 @@ public class PrimaryTest {
         SKY.bind(state);
         GraphicsPipeline pipeline0 = new GraphicsPipeline(state, pass, SKY.shaders);
 
+        CubePrimitive cube = new CubePrimitive(
+                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                format, 1, 1, 1
+        );
+
         try {
             int frame = 0;
 
@@ -227,39 +205,47 @@ public class PrimaryTest {
             buffer.clearDepth(1f);
 
             while (!ReniSetup.WINDOW.shouldClose()) {
-                matrices.set(0, Matrices.projection((float) Math.toRadians(45), ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(), 0.01f, 100.0f));
-
-                Matrix4f view = new Matrix4f();
-                view.setLookAt(0.0f, 0.0f, -50.0f,
-                        0.0f, 0.0f, 0.0f,
-                        0.0f, 1.0f, 0.0f);
-                Matrix4f model = new Matrix4f();
-                model.translate(15, -20, 0);
-                model.rotate(new Quaternionf().fromAxisAngleDeg(1, 0, 0, 22.5f));
-
-                model.mul(view);
-                matrices.set(1, model);
-                matrices.upload();
-
                 frame++;
 
                 {
-                    final FloatBuffer fb = buffer1.position(0).asFloatBuffer();
-                    fb.put(
-                            0,
-                            new float[]{
-                                    1, 0, 0.5f, 0,
-                                    0, 1, 0.5f, 0,
-                                    0, 0, 0.5f, 0,
-                                    1, 1, 0.5f, 0,
+                    matrices.set(0, Matrices.projection((float) Math.toRadians(45), ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(), 0.01f, 100.0f));
 
-                                    0.5f, 0, 0, 0,
-                                    0, 0.5f, 1, 0,
-                                    0, 0, 1, 0,
-                                    0.5f, 0.5f, 0, 0,
-                            }
-                    );
-                    vbo.upload(0, buffer1);
+                    Matrix4f view = new Matrix4f();
+                    view.setLookAt(0.0f, 0.0f, -50.0f,
+                            0.0f, 0.0f, 0.0f,
+                            0.0f, -1.0f, 0.0f);
+                    Matrix4f model = new Matrix4f();
+                    model.translate(15, -20, 0);
+                    model.rotate(new Quaternionf().fromAxisAngleDeg(1, 0, 0, 22.5f));
+//                    model.rotate(new Quaternionf().fromAxisAngleDeg(1, 0, 0, -frame));
+
+                    model.mul(view);
+                    matrices.set(1, model);
+                    matrices.upload();
+                }
+                // setup sky
+                {
+                    // skybox
+                    skyData.setColor(0, (int) ((201 / 325f) * 255f), (int) ((226 / 325f) * 255f), (int) ((254 / 325f) * 255f), 255);
+                    skyData.setColor(1, 201, 226, 254, 255);
+                    skyData.setColor(2, 201, 226, 254, 0);
+                    skyData.setColor(3, 81, 133, 201, 0);
+
+                    // sun
+                    skyData.set(4, new Quaternionf().setAngleAxis(
+                            Math.toRadians(frame / 10f), 1, 0, 0
+                    ));
+                    skyData.set(5, 1 / 32f);
+                    skyData.set(6, 1, 1, 1, 1f);
+
+                    // scatter
+                    skyData.set(7, 0);
+                    skyData.set(8, 168 / 255f, 113 / 255f, 50 / 255f, 1);
+                    skyData.set(9, 0, 0, 0);
+
+                    // TODO: stars
+
+                    skyData.upload();
                 }
 
                 ReniSetup.GRAPHICS_CONTEXT.prepareFrame(ReniSetup.WINDOW);
@@ -273,24 +259,19 @@ public class PrimaryTest {
                 buffer.bindPipe(pipeline0);
 //                buffer.bindDescriptor(BindPoint.GRAPHICS, pipeline0, set);
                 SKY.bindCommand(pipeline0, buffer);
+                buffer.cullMode(CullMode.BACK);
                 buffer.viewportScissor(
                         0, 0,
                         ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents().width(),
                         ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents().height(),
                         0f, 1f
                 );
-                buffer.bindVbo(0, vbo);
-                buffer.bindIbo(IndexSize.INDEX_16, ibo);
-                buffer.vkCmdDrawIndexed(
-                        0, 0,
-                        0, 1,
-                        0, 12
-                );
+                cube.draw(buffer);
                 buffer.endPass();
                 buffer.endLabel();
                 // TODO: setup access flags
 //                buffer.transition(
-//                        ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
+//                        tfc.test.ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
 //                        StageMask.TOP_OF_PIPE,
 //                        StageMask.TRANSFER,
 //                        ImageLayout.PRESENT,
@@ -318,9 +299,7 @@ public class PrimaryTest {
 //        texture.destroy();
 //        layout.destroy();
         pool.destroy();
-        MemoryUtil.memFree(buffer1);
-        ibo.destroy();
-        vbo.destroy();
+        cube.destroy();
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
         for (ShaderAttachment skyAttachment : SKY_ATTACHMENTS) skyAttachment.destroy();
         SKY.destroy();

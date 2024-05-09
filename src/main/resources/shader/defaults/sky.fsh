@@ -12,24 +12,24 @@ layout(binding = 0) uniform Matrices {
     mat4 modelViewMatrix;
 };
 
-layout(binding = 0) uniform Info {
-    vec4 BottomColor1;
-    vec4 BottomColor0;
+layout(binding = 1) uniform Info {
+    vec4 BottomColor1;    // 0
+    vec4 BottomColor0;    // 1
 
-    vec4 TopColor0;
-    vec4 TopColor1;
+    vec4 TopColor0;       // 2
+    vec4 TopColor1;       // 3
 
-    vec4 SunDir;
-    float SunSize;
-    vec4 SunColor;
+    vec4 SunDir;          // 4
+    float SunSize;        // 5
+    vec4 SunColor;        // 6
 
-    float Scattering;
-    vec4 ScatterColor;
-    vec3 ScatterDir;
+    float Scattering;     // 7
+    vec4 ScatterColor;    // 8
+    vec3 ScatterDir;      // 9
 
-    mat4 StarRotation;
-    float StarDensity;
-    float StarVisibility;
+    mat4 StarRotation;    // 10
+    float StarDensity;    // 11
+    float StarVisibility; // 12
 };
 
 #include <shader/util/quat_math.glsl>
@@ -87,7 +87,11 @@ void main() {
             // apply scatter color
             colorOut = mix(
                 colorOut,
-                ScatterColor * 3.0,
+                mix(
+                    ScatterColor,
+                    ScatterColor.brga * vec4(0.0, 1, 0.0, 1),
+                    clamp((1-col) - 0.75, 0.0, 0.25) * 1.5
+                ) * 3.0,
                 col
             );
             // create a ring around the horizon
@@ -136,14 +140,25 @@ void main() {
         }
 
         /* sun */ {
+            // TODO: sun disc options
+            float disc = dSun;
+
             dSun = clamp(dSun, 0.75f, 100);
             dSun -= 0.5;
+            dSun *= 1.5;
             dSun = clamp(dSun, 0, 1);
             colorOut = mix(
                 SunColor,
                 colorOut,
                 dSun
             );
+
+            disc = clamp(disc, 0.75f, 10000);
+            disc -= 0.5;
+            disc /= 40.;
+            disc = 1-disc;
+            disc = clamp(disc, 0, 1) / 4.;
+            colorOut += vec4(disc, disc, disc, 1) * clamp(sunCoord.y, 0, 1);
         }
     }
 }
