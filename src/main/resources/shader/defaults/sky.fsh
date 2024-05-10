@@ -97,8 +97,11 @@ void main() {
             // create a ring around the horizon
             // TODO: see about fading this as the pixel gets further from the sun?
             vec3 sun90 = normalize(rotate(vec4(0, 1, 0, 1), SunDir).xyz);
-            float ccord = abs((dot(coord.xyz, normalize(sun90 + vec3(0, 3 * sign(sun90.y), 0))) + 0.05) * 5);
-            ccord = clamp(sqrt(abs(ccord)), 0.0, 1.0);
+            float u = dot(sun90, vec3(0, 1, 0));
+            float ccord = ((dot(coord.xyz, normalize(sun90 + vec3(0, 3 * sign(sun90.y), 0))) + 0.05) * 5);
+            float v = sign(ccord) * sign(u);
+            ccord = clamp(pow(abs(ccord), 2), 0.0, 1.0);
+            if (v < 0) ccord = 0;
 
             colorOut = mix(
                 colorOut,
@@ -147,18 +150,27 @@ void main() {
             dSun -= 0.5;
             dSun *= 1.5;
             dSun = clamp(dSun, 0, 1);
+
+            disc = clamp(disc, 0.75f, 10000);
+            disc -= 0.5;
+            disc /= 40.;
+            disc /= clamp(sunCoord.y, 0.05, 1);
+            disc = sqrt(disc);
+            disc = 1-disc;
+            disc = clamp(disc, 0, 1) / 1.75;
+            colorOut = mix(
+                    colorOut,
+                    (vec4(disc, disc, disc, 1) + 0.25) * (clamp(sunCoord.y, 0, 0.5) + 1.) * SunColor,
+                    disc
+            );
+            disc /= 4.;
+            colorOut += vec4(disc, disc, disc, 1) * clamp(sunCoord.y, 0, 1) * SunColor;
+
             colorOut = mix(
                 SunColor,
                 colorOut,
                 dSun
             );
-
-            disc = clamp(disc, 0.75f, 10000);
-            disc -= 0.5;
-            disc /= 40.;
-            disc = 1-disc;
-            disc = clamp(disc, 0, 1) / 4.;
-            colorOut += vec4(disc, disc, disc, 1) * clamp(sunCoord.y, 0, 1);
         }
     }
 }

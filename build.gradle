@@ -45,6 +45,8 @@ dependencies {
     runtimeOnly("de.fabmax:physx-jni:2.3.2:natives-linux")
     runtimeOnly("de.fabmax:physx-jni:2.3.2:natives-macos")
     runtimeOnly("de.fabmax:physx-jni:2.3.2:natives-macos-arm64")
+//    runtimeOnly(files("physx-jni-natives-linux-cuda-2.3.2.jar"))
+//    runtimeOnly(files("physx-jni-natives-windows-cuda-2.3.2.jar"))
 
     // cores
     extraLibs "org.lwjgl:lwjgl"

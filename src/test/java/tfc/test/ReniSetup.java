@@ -77,7 +77,6 @@ public class ReniSetup {
                         GRAPHICS_CONTEXT.getHardware().createLogical()
                                 .enableIfPossible(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
                                 .enableIfPossible(NVLowLatency.VK_NV_LOW_LATENCY_EXTENSION_NAME)
-                                .enableIfPossible(KHRSynchronization2.VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME)
                                 // TODO: should probably support tfc.test.shared pairs
                                 // i.e. split(tfc.test.shared(GRAPHICS, TRANSFER), tfc.test.shared(COMPUTE, TRANSFER))
                                 .requestSharedIndices(

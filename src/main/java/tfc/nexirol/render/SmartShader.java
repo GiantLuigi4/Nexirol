@@ -12,6 +12,7 @@ import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
 import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
+import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayout;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayoutInfo;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
@@ -32,6 +33,7 @@ public class SmartShader implements ReniDestructable {
     DescriptorSet set;
     DescriptorLayoutInfo[] infos;
     BufferDescriptor[] descriptors;
+    UniformData[] vbos;
 
     UniformData constants;
 
@@ -41,15 +43,18 @@ public class SmartShader implements ReniDestructable {
             UniformData... data
     ) {
         ArrayList<DescriptorLayoutInfo> infos = new ArrayList<>();
+        ArrayList<UniformData> vbo = new ArrayList<>();
         ArrayList<BufferDescriptor> descs = new ArrayList<>();
         for (UniformData datum : data)
-            if (datum.info != null)
-                infos.add(datum.info);
-            else if (datum.descriptor != null)
+            if (datum.descriptor != null) {
                 descs.add(datum.descriptor);
+                vbo.add(datum);
+            } else if (datum.info != null)
+                infos.add(datum.info);
             else
                 constants = datum;
         this.infos = infos.toArray(new DescriptorLayoutInfo[0]);
+        this.vbos = vbo.toArray(new UniformData[0]);
         this.descriptors = descs.toArray(new BufferDescriptor[0]);
 
         pool = new DescriptorPool(
@@ -103,6 +108,9 @@ public class SmartShader implements ReniDestructable {
                     0, constants.bytes.capacity(),
                     constants.bytes.position(0).limit(constants.bytes.capacity())
             );
+        }
+        for (UniformData vbo : vbos) {
+            buffer.bindVbo(vbo.binding, vbo.buffer);
         }
     }
 

@@ -74,6 +74,11 @@ public class UniformData {
                     layout == DataLayout.VERTEX ||
                             layout == DataLayout.INSTANCE
             ) {
+                int strideDiv = 1;
+                if (format.elements.isStart() && format.elements.isEnd()) {
+                    strideDiv = format.elements.value.arrayCount;
+                }
+
                 descriptor = new BufferDescriptor(
                         format
                 ).advance(switch (layout) {
@@ -81,7 +86,14 @@ public class UniformData {
                     case INSTANCE -> AdvanceRate.PER_INSTANCE;
                     default -> throw new RuntimeException("HUH???");
                 });
-                descriptor.describe(binding);
+                descriptor.describe(
+                        binding,
+                        ((indexedElements[indexedElements.length - 1].memoryOffset + (
+                                indexedElements[indexedElements.length - 1].element.size *
+                                        indexedElements[indexedElements.length - 1].element.type.size))
+                                / strideDiv
+                        )
+                );
             } else {
                 info = new DescriptorLayoutInfo(
                         binding,
@@ -90,6 +102,10 @@ public class UniformData {
                 );
             }
         }
+    }
+
+    public BufferDescriptor getDescriptor() {
+        return descriptor;
     }
 
     public UniformData(boolean constant, DataFormat format, ShaderStageFlags[] stages, int binding) {
@@ -101,10 +117,13 @@ public class UniformData {
     }
 
     public void setup(ReniContext context) {
-        if (info != null) {
+        if (info != null || descriptor != null) {
+            BufferUsage usage = BufferUsage.UNIFORM;
+            if (descriptor != null) usage = BufferUsage.VERTEX;
+
             buffer = new GPUBuffer(
                     context.getLogical(),
-                    BufferUsage.UNIFORM,
+                    usage,
                     indexedElements[indexedElements.length - 1].memoryOffset + (
                             indexedElements[indexedElements.length - 1].element.size *
                                     indexedElements[indexedElements.length - 1].element.type.size
@@ -228,7 +247,7 @@ public class UniformData {
     }
 
     public void upload() {
-        if (info != null) {
+        if (buffer != null) {
             bytes.position(0).limit(ulEnd);
             buffer.upload(ulStart, (ulEnd - ulStart), bytes);
             ulStart = Integer.MAX_VALUE;
@@ -237,7 +256,7 @@ public class UniformData {
     }
 
     public void upload(CommandBuffer buffer) {
-        if (info != null) {
+        if (buffer != null) {
             bytes.position(0).limit(ulEnd);
             // TODO: should use a submit queue and copy from a temporary submission buffer to the main buffer or smth
             buffer.bufferData(

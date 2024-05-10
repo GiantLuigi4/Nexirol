@@ -9,6 +9,7 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.nexirol.math.Matrices;
 import tfc.nexirol.physics.bullet.BulletWorld;
+import tfc.nexirol.physics.physx.PhysXWorld;
 import tfc.nexirol.physics.wrapper.Material;
 import tfc.nexirol.physics.wrapper.PhysicsDrawable;
 import tfc.nexirol.physics.wrapper.PhysicsWorld;
@@ -47,7 +48,7 @@ public class CameraMotion {
     public static void main(String[] args) {
         System.setProperty("joml.nounsafe", "true");
         Scenario.useWinNT = false;
-        Scenario.useRenderDoc = false;
+//        Scenario.useRenderDoc = false;
         ReniSetup.initialize();
 
         Shaders shaders = new Shaders();
@@ -125,10 +126,11 @@ public class CameraMotion {
             buffer.clearDepth(1f);
 
 //            PhysicsWorld world = new BulletWorld();
-            PhysicsWorld world = new BulletWorld();
+//            PhysicsWorld world = new BulletWorld();
+            PhysicsWorld world = new PhysXWorld();
 
-            final int MAX_INSTANCES = 5_000;
-            final int SHADER_MAX_INSTANCES = 1_000;
+            final int MAX_INSTANCES = 50_000;
+            final int SHADER_MAX_INSTANCES = 4_000;
             InstanceCollection collection = new InstanceCollection(
                     (collection1) -> {
                         collection1.maxInstances = SHADER_MAX_INSTANCES;
@@ -147,7 +149,7 @@ public class CameraMotion {
                 RigidBody body;
                 world.addBody(body = new RigidBody(
                         true, new Cube(100, 1, 100),
-                        new Material(1, 1, 1) // probably gonna have some stupid result, lol
+                        new Material(0.5f, 0.5f, 0.0f)
                 ).setPosition(
                         0, -40, 0
                 ));
@@ -196,7 +198,7 @@ public class CameraMotion {
                 RigidBody body;
                 world.addBody(body = new RigidBody(
                         false, new Cube(size, size, size),
-                        new Material(1, 1, 1) // probably gonna have some stupid result, lol
+                        new Material(0.5f, 0.5f, 0.0f)
                 ).setPosition(
                         (float) (Math.random() * 25f - (25f / 2)),
                         (float) (Math.random() * 25f - (25f / 2)) + i,
@@ -304,6 +306,14 @@ public class CameraMotion {
 //                cameraRotation.normalize();
             });
 
+            Thread td = new Thread(() -> {
+                while (true) {
+                    world.tick();
+                }
+            });
+            td.setDaemon(true);
+            td.start();
+
             while (!ReniSetup.WINDOW.shouldClose()) {
                 frame++;
 
@@ -332,7 +342,11 @@ public class CameraMotion {
                 {
                     UniformData matrices = Shaders.matrices;
 
-                    matrices.set(0, Matrices.projection((float) Math.toRadians(45), ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(), 0.01f, 300.0f));
+                    matrices.set(0, Matrices.projection(
+                            (float) Math.toRadians(45),
+                            ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(),
+                            0.1f, 10000.0f
+                    ));
 
                     Matrix4f view = new Matrix4f();
                     view.setLookAt(cameraPos.x, cameraPos.y, cameraPos.z,
@@ -360,7 +374,7 @@ public class CameraMotion {
                             Math.toRadians(frame / 10f), 1, 0, 0
                     ));
                     skyData.set(5, 1 / 32f);
-                    skyData.set(6, 1, 1, 1, 1f);
+                    skyData.setColor(6, 254, 247, 217, 255);
 
                     // scatter
                     skyData.set(7, 0);
@@ -409,7 +423,6 @@ public class CameraMotion {
                             ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents().height(),
                             0f, 1f
                     );
-                    world.tick();
                     collection.draw(buffer, pipeline1);
                     buffer.endLabel();
                 }

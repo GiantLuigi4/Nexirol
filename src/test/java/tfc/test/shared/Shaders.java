@@ -6,6 +6,7 @@ import tfc.nexirol.render.SmartShader;
 import tfc.nexirol.render.UniformData;
 import tfc.nexirol.render.glsl.*;
 import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
+import tfc.renirol.frontend.rendering.enums.format.AttributeFormat;
 import tfc.renirol.frontend.rendering.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
@@ -73,12 +74,12 @@ public class Shaders {
     );
 
     public static final UniformData cubeInstanceData = new UniformData(
-            false, DataLayout.SCALAR,
+            false, DataLayout.INSTANCE,
             new DataFormat(
                     new DataElement(
                             NumericPrimitive.FLOAT,
                             3 + 4 + 3 + 4,
-                            1000
+                            4000
                     )
             ),
             new ShaderStageFlags[]{ShaderStageFlags.VERTEX},
@@ -92,6 +93,11 @@ public class Shaders {
         matrices.setup(ReniSetup.GRAPHICS_CONTEXT);
         skyData.setup(ReniSetup.GRAPHICS_CONTEXT);
         cubeInstanceData.setup(ReniSetup.GRAPHICS_CONTEXT);
+
+        cubeInstanceData.getDescriptor().attribute(1, 2, AttributeFormat.RGB32_FLOAT, 0);
+        cubeInstanceData.getDescriptor().attribute(1, 3, AttributeFormat.RGBA32_FLOAT, 12);
+        cubeInstanceData.getDescriptor().attribute(1, 4, AttributeFormat.RGB32_FLOAT, 28);
+        cubeInstanceData.getDescriptor().attribute(1, 5, AttributeFormat.RGBA32_FLOAT, 40);
 
         compiler.setupGlsl();
         compiler.debug();

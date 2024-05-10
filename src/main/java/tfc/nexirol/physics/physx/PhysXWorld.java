@@ -36,11 +36,40 @@ public class PhysXWorld extends PhysicsWorld {
 
     public PhysXWorld() {
         PxSceneDesc sceneDesc = new PxSceneDesc(physics.getTolerancesScale());
-        sceneDesc.setCpuDispatcher(PxTopLevelFunctions.DefaultCpuDispatcherCreate(1));
+        sceneDesc.setCpuDispatcher(PxTopLevelFunctions.DefaultCpuDispatcherCreate(11));
         sceneDesc.setFilterShader(PxTopLevelFunctions.DefaultFilterShader());
+
+//        PxCudaContextManagerDesc desc = new PxCudaContextManagerDesc();
+//        PxCudaContextManager cudaMgr = PxCudaTopLevelFunctions.CreateCudaContextManager(foundation, desc);
+//
+//        // Check if CUDA context is valid / CUDA support is available
+//        if (cudaMgr != null && cudaMgr.contextIsValid()) {
+//            // enable CUDA!
+//            sceneDesc.setCudaContextManager(cudaMgr);
+//            sceneDesc.setFlags(new PxSceneFlags(PxSceneFlagEnum.eENABLE_GPU_DYNAMICS.value));
+//            sceneDesc.setBroadPhaseType(PxBroadPhaseTypeEnum.eGPU);
+//
+//            // optionally fine tune amount of allocated CUDA memory
+//            // PxgDynamicsMemoryConfig memCfg = new PxgDynamicsMemoryConfig();
+//            // memCfg.setStuff...
+//            // sceneDesc.setGpuDynamicsConfig(memCfg);
+//        } else {
+//            System.err.println("No CUDA support!");
+//        }
+
+        sceneDesc.setDynamicTreeSecondaryPruner(PxDynamicTreeSecondaryPrunerEnum.eBUCKET);
+        sceneDesc.setBroadPhaseType(PxBroadPhaseTypeEnum.ePABP);
+
+        sceneDesc.setDynamicBVHBuildStrategy(PxBVHBuildStrategyEnum.eFAST);
+        sceneDesc.setStaticBVHBuildStrategy(PxBVHBuildStrategyEnum.eFAST);
+
+        sceneDesc.setSolverType(PxSolverTypeEnum.ePGS);
+        sceneDesc.setSolverBatchSize(sceneDesc.getSolverBatchSize() * 2);
 
         // TODO: cuda
         sceneDesc.getGravity().setY(-9.81f);
+
+        sceneDesc.setCcdThreshold(0f);
 
         sceneDesc.setKineKineFilteringMode(PxPairFilteringModeEnum.eKEEP);
         sceneDesc.setStaticKineFilteringMode(PxPairFilteringModeEnum.eKEEP);
@@ -93,9 +122,9 @@ public class PhysXWorld extends PhysicsWorld {
             transform.getP().setZ(body.vec.z);
         }
         {
-            transform.getQ().setX(body.quat.x);
-            transform.getQ().setY(body.quat.y);
-            transform.getQ().setZ(body.quat.z);
+            transform.getQ().setX(-body.quat.x);
+            transform.getQ().setY(-body.quat.y);
+            transform.getQ().setZ(-body.quat.z);
             transform.getQ().setW(body.quat.w);
         }
         if (body.isStatic) {
@@ -122,12 +151,18 @@ public class PhysXWorld extends PhysicsWorld {
                     );
                 },
                 material,
-                true
+                true,
+                new PxShapeFlags(
+                        (byte) (PxShapeFlagEnum.eSCENE_QUERY_SHAPE.value | PxShapeFlagEnum.eSIMULATION_SHAPE.value)
+                )
         );
         actor.attachShape(shape);
+        PxFilterData tmpFilterData = new PxFilterData(1, 1, 0, 0);
+        shape.setSimulationFilterData(tmpFilterData);
         if (actor instanceof PxRigidDynamic dynamic) {
             dynamic.setMass(1);
             PxRigidBodyExt.updateMassAndInertia((PxRigidBody) actor, 1.0f);
+//            dynamic.setMassSpaceInertiaTensor(new PxVec3(0, 0, 0));
         }
         body.bindRemove(this, () -> {
             scene.removeActor(actor);
@@ -149,7 +184,7 @@ public class PhysXWorld extends PhysicsWorld {
             PxVec3 vec3 = body.right().getGlobalPose().getP();
             PxQuat quat = body.right().getGlobalPose().getQ();
             body.left().setPosition(vec3.getX(), vec3.getY(), vec3.getZ());
-            body.left().setOrientation(quat.getX(), quat.getY(), quat.getZ(), quat.getW());
+            body.left().setOrientation(-quat.getX(), -quat.getY(), -quat.getZ(), quat.getW());
             body.left().update();
         }
     }
