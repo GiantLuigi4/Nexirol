@@ -8,7 +8,6 @@ import org.lwjgl.vulkan.VK13;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.nexirol.math.Matrices;
-import tfc.nexirol.physics.bullet.BulletWorld;
 import tfc.nexirol.physics.physx.PhysXWorld;
 import tfc.nexirol.physics.wrapper.Material;
 import tfc.nexirol.physics.wrapper.PhysicsDrawable;
@@ -36,7 +35,6 @@ import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
 import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.renirol.frontend.windowing.listener.KeyboardListener;
-import tfc.renirol.frontend.windowing.listener.MouseListener;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
 import tfc.test.shared.Shaders;
@@ -130,7 +128,7 @@ public class CameraMotion {
             PhysicsWorld world = new PhysXWorld();
 
             final int MAX_INSTANCES = 50_000;
-            final int SHADER_MAX_INSTANCES = 4_000;
+            final int SHADER_MAX_INSTANCES = 5_000;
             InstanceCollection collection = new InstanceCollection(
                     (collection1) -> {
                         collection1.maxInstances = SHADER_MAX_INSTANCES;
@@ -148,7 +146,7 @@ public class CameraMotion {
                 float b = (float) Math.random();
                 RigidBody body;
                 world.addBody(body = new RigidBody(
-                        true, new Cube(100, 1, 100),
+                        true, new Cube(1000, 20, 1000),
                         new Material(0.5f, 0.5f, 0.0f)
                 ).setPosition(
                         0, -40, 0
@@ -168,9 +166,9 @@ public class CameraMotion {
                             fb.put(5, body.quat.z);
                             fb.put(6, body.quat.w);
                             // scale
-                            fb.put(7, 100);
-                            fb.put(8, 1);
-                            fb.put(9, 100);
+                            fb.put(7, 1000);
+                            fb.put(8, 20);
+                            fb.put(9, 1000);
                             // color
                             fb.put(10, r);
                             fb.put(11, g);
@@ -201,7 +199,7 @@ public class CameraMotion {
                         new Material(0.5f, 0.5f, 0.0f)
                 ).setPosition(
                         (float) (Math.random() * 25f - (25f / 2)),
-                        (float) (Math.random() * 25f - (25f / 2)) + i,
+                        (float) (Math.random() * 25f - (25f / 2)) + i / 10f,
                         (float) (Math.random() * 25f - (25f / 2))
                 ));
 
@@ -428,6 +426,7 @@ public class CameraMotion {
                 }
                 buffer.endPass();
                 buffer.endLabel();
+
                 buffer.end();
 
                 ReniSetup.GRAPHICS_CONTEXT.submitFrame(buffer);
@@ -450,6 +449,7 @@ public class CameraMotion {
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
         shaders.destroy();
         desc0.destroy();
+        pipeline1.destroy();
         pipeline0.destroy();
         pass.destroy();
         ReniSetup.GRAPHICS_CONTEXT.destroy();

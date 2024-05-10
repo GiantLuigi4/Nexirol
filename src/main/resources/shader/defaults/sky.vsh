@@ -1,6 +1,5 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
-//#extension GL_EXT_gpu_shader4 : enable
 
 layout(location = 0) in vec4 Position;
 
@@ -12,7 +11,6 @@ layout(binding = 0) uniform Matrices {
 };
 
 void main() {
-    fgCoord = Position;
-//    gl_Position = Position;
-    gl_Position = projectionMatrix * mat4(mat3(modelViewMatrix)) * Position;
+    fgCoord = Position * mat4(mat3(modelViewMatrix));
+    gl_Position = projectionMatrix * Position;
 }

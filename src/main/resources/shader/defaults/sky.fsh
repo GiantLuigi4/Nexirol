@@ -1,7 +1,6 @@
 //@formatter:off
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
-//#extension GL_EXT_gpu_shader4 : enable
 
 layout(location = 0) in vec4 fgCoord;
 
@@ -37,13 +36,8 @@ layout(binding = 1) uniform Info {
 // 0.25
 #define SKYBOX_BOTTOM 0.15
 
+// TODO: refactor
 void main() {
-//    vec4 coord = normalize(rotate(projectionMatrix * normalize(fgCoord), rotation));
-//    colorOut = vec4(normalize(coord.xyz), 1);
-//    if (colorOut.y < coord.y) colorOut = vec4(0);
-//    colorOut = abs(colorOut);
-    // TODO: figure out how to do a sky quad
-
     vec4 coord = vec4(normalize(fgCoord.xyz), 1);
 
     colorOut = TopColor0;
@@ -70,7 +64,7 @@ void main() {
 
         /* scattering */ {
             vec2 sunOpposite2D = normalize(vec2(sunCoord.xz));
-            vec3 scatterOpposite = normalize(vec3(sunOpposite2D.x * 0.5, -0.8, sunOpposite2D.y * 0.5));
+            vec3 scatterOpposite = normalize(vec3(sunOpposite2D.x * 0.5, -1.2, sunOpposite2D.y * 0.5));
 
             // calculate scatter amount
             float col = dot(scatterOpposite, coord.xyz);
@@ -82,7 +76,7 @@ void main() {
 				c /= 4.0;
                 cscale *= 1.0 - c;
             }
-            col = clamp(col * cscale, 0, 1);
+            col = clamp(col * cscale * 2., 0, 1);
 
             // apply scatter color
             colorOut = mix(
@@ -95,17 +89,23 @@ void main() {
                 col
             );
             // create a ring around the horizon
-            // TODO: see about fading this as the pixel gets further from the sun?
             vec3 sun90 = normalize(rotate(vec4(0, 1, 0, 1), SunDir).xyz);
-            float u = dot(sun90, vec3(0, 1, 0));
-            float ccord = ((dot(coord.xyz, normalize(sun90 + vec3(0, 3 * sign(sun90.y), 0))) + 0.05) * 5);
-            float v = sign(ccord) * sign(u);
-            ccord = clamp(pow(abs(ccord), 2), 0.0, 1.0);
+            float u = sign(sun90.y);
+//            float ccord = ((dot(coord.xyz, normalize(sun90 + vec3(0, 5 * sign(sun90.y), 0))) + 0.05) * 5);
+//            float ccord = ((dot(coord.xyz, normalize(sun90 + vec3(0, 5 + 3 * sign(sun90.y), 0))) + 0.05) * 5);
+            float ccord = ((dot(coord.xyz, normalize(sun90 + vec3(0, 3 * u, 0))) + 0.05) * 5);
+            ccord += 0.5 * u;
+            float v = sign(ccord) * u;
+            ccord = clamp(pow(ccord, 2), 0.0, 1.0);
             if (v < 0) ccord = 0;
 
             colorOut = mix(
                 colorOut,
-                ScatterColor * 3.0,
+                mix(
+                    ScatterColor,
+                    ScatterColor.brga * vec4(0.0, 1, 0.0, 1),
+                    clamp((1 - ((1 - ccord) * (cscale * cscale))) - 0.75, 0.0, 0.25) * 1.5
+                ) * 3.0,
                 (1 - ccord) * (cscale * cscale)
             );
 

@@ -79,7 +79,7 @@ public class Shaders {
                     new DataElement(
                             NumericPrimitive.FLOAT,
                             3 + 4 + 3 + 4,
-                            4000
+                            5_000
                     )
             ),
             new ShaderStageFlags[]{ShaderStageFlags.VERTEX},

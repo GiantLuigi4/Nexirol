@@ -3,10 +3,11 @@ package tfc.test;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VK13;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkExtent2D;
 import tfc.nexirol.math.Matrices;
 import tfc.nexirol.physics.bullet.BulletWorld;
-import tfc.nexirol.physics.physx.PhysXWorld;
 import tfc.nexirol.physics.wrapper.Material;
 import tfc.nexirol.physics.wrapper.PhysicsDrawable;
 import tfc.nexirol.physics.wrapper.PhysicsWorld;
@@ -18,11 +19,8 @@ import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
-import tfc.renirol.frontend.rendering.enums.DescriptorType;
 import tfc.renirol.frontend.rendering.enums.ImageLayout;
 import tfc.renirol.frontend.rendering.enums.Operation;
-import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.rendering.enums.format.AttributeFormat;
 import tfc.renirol.frontend.rendering.enums.masks.DynamicStateMasks;
 import tfc.renirol.frontend.rendering.enums.modes.CullMode;
@@ -30,7 +28,6 @@ import tfc.renirol.frontend.rendering.pass.RenderPass;
 import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
-import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
 import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.test.data.VertexElements;
@@ -117,7 +114,7 @@ public class Phys {
             PhysicsWorld world = new BulletWorld();
 
             final int MAX_INSTANCES = 5_000;
-            final int SHADER_MAX_INSTANCES = 1_000;
+            final int SHADER_MAX_INSTANCES = 5_000;
             InstanceCollection collection = new InstanceCollection(
                     (collection1) -> {
                         collection1.maxInstances = SHADER_MAX_INSTANCES;

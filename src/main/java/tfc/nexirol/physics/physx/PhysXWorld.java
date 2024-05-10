@@ -12,7 +12,6 @@ import tfc.nexirol.physics.wrapper.shape.Cube;
 import tfc.renirol.util.Pair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 // TODO: how th does one make physx do physics
 public class PhysXWorld extends PhysicsWorld {
@@ -112,6 +111,12 @@ public class PhysXWorld extends PhysicsWorld {
 //        scene.setCCDMaxPasses(128);
 //        scene.setCCDMaxSeparation(1f);
     }
+
+//    PxMaterial material = physics.createMaterial(
+//            0.5f,
+//            0.5f,
+//            0f
+//    );
 
     public void addBody(RigidBody body) {
         PxRigidActor actor;
