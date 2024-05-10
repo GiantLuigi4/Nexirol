@@ -5,7 +5,7 @@ layout (location = 1) in vec3 wsCoord;
 layout (location = 2) in vec3 normal;
 
 layout (location = 0) out vec4 colorOut;
-//layout (location = 1) out vec4 normalOut;
+layout (location = 1) out vec4 normalOut;
 
 vec4 screenToWorld(mat4 model, mat4 proj, in float depth, in vec2 uv){
     vec4 coord = vec4(uv, depth, 1.0) * 2.0 - 1.0;
@@ -21,7 +21,7 @@ layout(binding = 0) uniform Matrices {
 };
 
 void main() {
-//    normalOut = normal;
+    normalOut = vec4(normal, 1.0);
 
     float amt = dot(normal, normalize(vec3(0.75, 0.9, -0.5) * 300. - wsCoord));
     if (amt < 0) amt *= 0;

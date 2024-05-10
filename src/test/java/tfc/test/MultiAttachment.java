@@ -24,6 +24,7 @@ import tfc.renirol.frontend.rendering.enums.DescriptorType;
 import tfc.renirol.frontend.rendering.enums.ImageLayout;
 import tfc.renirol.frontend.rendering.enums.Operation;
 import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
+import tfc.renirol.frontend.rendering.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.rendering.enums.format.AttributeFormat;
 import tfc.renirol.frontend.rendering.enums.masks.DynamicStateMasks;
 import tfc.renirol.frontend.rendering.enums.modes.CullMode;
@@ -32,6 +33,7 @@ import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
+import tfc.renirol.frontend.rendering.resource.image.Image;
 import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.renirol.frontend.windowing.listener.KeyboardListener;
@@ -42,12 +44,22 @@ import tfc.test.shared.Shaders;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class CameraMotion {
+public class MultiAttachment {
     public static void main(String[] args) {
         System.setProperty("joml.nounsafe", "true");
         Scenario.useWinNT = false;
 //        Scenario.useRenderDoc = false;
         ReniSetup.initialize();
+        Image col;
+        ReniSetup.GRAPHICS_CONTEXT.addBuffer(
+                col = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical())
+                        .setUsage(SwapchainUsage.COLOR)
+        );
+        col.create(
+                ReniSetup.WINDOW.getWidth(),
+                ReniSetup.WINDOW.getHeight(),
+                VK13.VK_FORMAT_R8G8B8A8_SRGB
+        );
 
         Shaders shaders = new Shaders();
 
@@ -63,6 +75,10 @@ public class CameraMotion {
                     Operation.CLEAR, Operation.PERFORM,
                     ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     ReniSetup.DEPTH_FORMAT
+            ).colorAttachment(
+                    Operation.CLEAR, Operation.PERFORM,
+                    ImageLayout.UNDEFINED, ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
+                    ReniSetup.selector
             ).dependency().subpass().create();
             info.destroy();
 
@@ -75,11 +91,16 @@ public class CameraMotion {
                     Operation.PERFORM, Operation.PERFORM,
                     ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     ReniSetup.DEPTH_FORMAT
+            ).colorAttachment(
+                    Operation.PERFORM, Operation.PERFORM,
+                    ImageLayout.UNDEFINED, ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
+                    ReniSetup.selector
             ).dependency().subpass().create();
             info.destroy();
         }
 
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
+        state.colorAttachmentCount(2);
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT, DynamicStateMasks.CULL_MODE);
 
         DataFormat format = VertexFormats.POS4_NORMAL3;
