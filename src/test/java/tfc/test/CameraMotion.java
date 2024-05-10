@@ -2,11 +2,13 @@ package tfc.test;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VK13;
+import org.lwjgl.vulkan.VkDevice;
+import org.lwjgl.vulkan.VkExtent2D;
 import tfc.nexirol.math.Matrices;
 import tfc.nexirol.physics.bullet.BulletWorld;
-import tfc.nexirol.physics.physx.PhysXWorld;
 import tfc.nexirol.physics.wrapper.Material;
 import tfc.nexirol.physics.wrapper.PhysicsDrawable;
 import tfc.nexirol.physics.wrapper.PhysicsWorld;
@@ -22,7 +24,6 @@ import tfc.renirol.frontend.rendering.enums.DescriptorType;
 import tfc.renirol.frontend.rendering.enums.ImageLayout;
 import tfc.renirol.frontend.rendering.enums.Operation;
 import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.rendering.enums.format.AttributeFormat;
 import tfc.renirol.frontend.rendering.enums.masks.DynamicStateMasks;
 import tfc.renirol.frontend.rendering.enums.modes.CullMode;
@@ -33,6 +34,8 @@ import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
 import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
+import tfc.renirol.frontend.windowing.listener.KeyboardListener;
+import tfc.renirol.frontend.windowing.listener.MouseListener;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
 import tfc.test.shared.Shaders;
@@ -40,9 +43,11 @@ import tfc.test.shared.Shaders;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class Phys {
+public class CameraMotion {
     public static void main(String[] args) {
         System.setProperty("joml.nounsafe", "true");
+        Scenario.useWinNT = false;
+        Scenario.useRenderDoc = false;
         ReniSetup.initialize();
 
         Shaders shaders = new Shaders();
@@ -85,7 +90,13 @@ public class Phys {
         desc0.attribute(0, 0, AttributeFormat.RGBA32_FLOAT, 0);
         desc0.attribute(0, 1, AttributeFormat.RGB32_FLOAT, format.offset(VertexElements.NORMAL_XYZ));
 
-        state.vertexInput(desc0);
+        // TODO: ideally this stuff would be abstracted away more
+        final DescriptorPool pool = new DescriptorPool(
+                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                1,
+                new DescriptorPoolFlags[0],
+                DescriptorPool.PoolInfo.of(DescriptorType.UNIFORM_BUFFER, 10)
+        );
 
         shaders.SKY.prepare();
         shaders.SKY.bind(state, desc0);
@@ -230,8 +241,93 @@ public class Phys {
                 ));
             }
 
+            boolean[] inputStates = new boolean[6];
+
+            // controls
+            ReniSetup.WINDOW.addKeyboardListener(new KeyboardListener() {
+                @Override
+                public void keyPress(int i, int i1, int i2) {
+                    if (i == GLFW.GLFW_KEY_W) inputStates[0] = true;
+                    else if (i == GLFW.GLFW_KEY_S) inputStates[1] = true;
+                    else if (i == GLFW.GLFW_KEY_A) inputStates[2] = true;
+                    else if (i == GLFW.GLFW_KEY_D) inputStates[3] = true;
+                    else if (i == GLFW.GLFW_KEY_SPACE) inputStates[4] = true;
+                    else if (i == GLFW.GLFW_KEY_LEFT_SHIFT) inputStates[5] = true;
+                }
+
+                @Override
+                public void keyRelease(int i, int i1, int i2) {
+                    if (i == GLFW.GLFW_KEY_W) inputStates[0] = false;
+                    else if (i == GLFW.GLFW_KEY_S) inputStates[1] = false;
+                    else if (i == GLFW.GLFW_KEY_A) inputStates[2] = false;
+                    else if (i == GLFW.GLFW_KEY_D) inputStates[3] = false;
+                    else if (i == GLFW.GLFW_KEY_SPACE) inputStates[4] = false;
+                    else if (i == GLFW.GLFW_KEY_LEFT_SHIFT) inputStates[5] = false;
+                }
+
+                @Override
+                public void keyType(int i, int i1, int i2) {
+
+                }
+            });
+            ((GLFWWindow) ReniSetup.WINDOW).captureMouse();
+
+            Vector3f cameraPos = new Vector3f();
+            Quaternionf cameraRotation = new Quaternionf(0, 0, 0, 1);
+
+            double[] last = new double[2];
+            double[] rV = new double[2];
+            ReniSetup.WINDOW.addMouseListener((v, v1) -> {
+                double x = v - last[0];
+                double y = v1 - last[1];
+                last[0] = v;
+                last[1] = v1;
+
+                rV[0] += x;
+                rV[1] -= y;
+
+                Quaternionf q = new Quaternionf(0, 0, 0, 1);
+                q.rotateLocalY((float) rV[0] / 200f);
+                q.rotateLocalX((float) rV[1] / 200f);
+                cameraRotation.set(q);
+                cameraRotation.normalize();
+
+//                Quaternionf q = new Quaternionf(0, 0, 0, 1);
+//                Quaternionf q1 = new Quaternionf(0, 0, 0, 1);
+//                q.rotateLocalY((float) (x / 200f));
+//                q1.rotateLocalX((float) (y / 200f));
+//                cameraRotation.conjugate();
+//                cameraRotation.mul(q1);
+//                cameraRotation.normalize();
+//                cameraRotation.conjugate();
+//                cameraRotation.mul(q);
+//                cameraRotation.normalize();
+            });
+
             while (!ReniSetup.WINDOW.shouldClose()) {
                 frame++;
+
+                Quaternionf q = new Quaternionf(0, 0, 0, 1);
+                q.rotateLocalX((float) rV[1] / 200f);
+                Vector3f forward = new Vector3f(0, 0, 1);
+                Vector3f right = new Vector3f(1, 0, 0);
+                forward.rotate(q).normalize();
+                right.rotate(q).normalize();
+
+                q = new Quaternionf(0, 0, 0, 1);
+                q.rotateLocalY((float) rV[0] / 200f);
+                forward.rotate(q).normalize();
+                right.rotate(q).normalize();
+
+                forward.y = -forward.y;
+                right.y = -right.y;
+
+                if (inputStates[0]) cameraPos.add(forward);
+                if (inputStates[1]) cameraPos.sub(forward);
+                if (inputStates[2]) cameraPos.sub(right);
+                if (inputStates[3]) cameraPos.add(right);
+                if (inputStates[4]) cameraPos.y += 1.0f;
+                if (inputStates[5]) cameraPos.y -= 1.0f;
 
                 {
                     UniformData matrices = Shaders.matrices;
@@ -239,12 +335,11 @@ public class Phys {
                     matrices.set(0, Matrices.projection((float) Math.toRadians(45), ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(), 0.01f, 300.0f));
 
                     Matrix4f view = new Matrix4f();
-                    float x = (float) Math.cos(Math.toRadians(frame / 10.));
-                    float y = (float) Math.sin(Math.toRadians(frame / 10.));
-                    view.setLookAt(x * 100f, 20f, y * 100f,
-                            0.0f, -30.0f, 0.0f,
+                    view.setLookAt(cameraPos.x, cameraPos.y, cameraPos.z,
+                            cameraPos.x, cameraPos.y, cameraPos.z + 1,
                             0.0f, -1.0f, 0.0f);
                     Matrix4f model = new Matrix4f();
+                    model.rotate(cameraRotation);
 
                     model.mul(view);
                     matrices.set(1, model);
@@ -337,6 +432,7 @@ public class Phys {
             err.printStackTrace();
         }
 
+        pool.destroy();
         cube.destroy();
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
         shaders.destroy();

@@ -4,6 +4,7 @@ import org.lwjgl.vulkan.*;
 import tfc.renirol.ReniContext;
 import tfc.renirol.Renirol;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
+import tfc.renirol.frontend.hardware.device.Vendors;
 import tfc.renirol.frontend.hardware.device.support.image.ReniSwapchainCapabilities;
 import tfc.renirol.frontend.hardware.util.DeviceQuery;
 import tfc.renirol.frontend.hardware.util.ReniHardwareCapability;
@@ -18,6 +19,8 @@ import tfc.renirol.frontend.windowing.winnt.WinNTWindow;
 public class ReniSetup {
     public static final ReniContext GRAPHICS_CONTEXT = new ReniContext();
     public static final GenericWindow WINDOW;
+
+    public static final boolean NVIDIA;
 
     static {
         Setup.performanceSetup();
@@ -74,6 +77,7 @@ public class ReniSetup {
                         GRAPHICS_CONTEXT.getHardware().createLogical()
                                 .enableIfPossible(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
                                 .enableIfPossible(NVLowLatency.VK_NV_LOW_LATENCY_EXTENSION_NAME)
+                                .enableIfPossible(KHRSynchronization2.VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME)
                                 // TODO: should probably support tfc.test.shared pairs
                                 // i.e. split(tfc.test.shared(GRAPHICS, TRANSFER), tfc.test.shared(COMPUTE, TRANSFER))
                                 .requestSharedIndices(
@@ -86,6 +90,8 @@ public class ReniSetup {
                 ).create()
         );
         WINDOW.initContext(GRAPHICS_CONTEXT);
+
+        NVIDIA = GRAPHICS_CONTEXT.getHardware().information.getVendorEnum() == Vendors.NVIDIA;
     }
 
     public static final FormatSelector selector = new FormatSelector()

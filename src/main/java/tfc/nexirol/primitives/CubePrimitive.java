@@ -1,6 +1,8 @@
 package tfc.nexirol.primitives;
 
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.VK13;
+import org.lwjgl.vulkan.VkCommandBuffer;
 import tfc.renirol.frontend.hardware.device.ReniLogicalDevice;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
@@ -224,8 +226,8 @@ public class CubePrimitive implements Instanceable, Drawable, InstanceKey {
     }
 
     public void draw(CommandBuffer buffer) {
-        buffer.vkCmdDrawIndexed(
-                0, 0,
+        buffer.drawIndexed(
+                0,
                 0, 1,
                 0, 12 + 12 + 12
         );
@@ -244,8 +246,8 @@ public class CubePrimitive implements Instanceable, Drawable, InstanceKey {
 
     @Override
     public void draw(CommandBuffer buffer, GraphicsPipeline graphicsPipeline, int instances) {
-        buffer.vkCmdDrawIndexed(
-                0, 0,
+        buffer.drawIndexed(
+                0,
                 0, instances,
                 0, 12 + 12 + 12
         );

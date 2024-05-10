@@ -132,8 +132,6 @@ public class Skybox {
         desc0.describe(0);
         desc0.attribute(0, 0, AttributeFormat.RGB32_FLOAT, 0);
 
-        state.vertexInput(desc0);
-
         // TODO: ideally this stuff would be abstracted away more
         final DescriptorPool pool = new DescriptorPool(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -184,7 +182,7 @@ public class Skybox {
 //        }
 
         SKY.prepare();
-        SKY.bind(state);
+        SKY.bind(state, desc0);
         GraphicsPipeline pipeline0 = new GraphicsPipeline(state, pass, SKY.shaders);
 
         CubePrimitive cube = new CubePrimitive(

@@ -35,7 +35,7 @@ public class BulletWorld extends PhysicsWorld {
                 new Vector3f(-1000, -1000, -1000),
                 new Vector3f(1000, 1000, 1000),
                 PhysicsSpace.BroadphaseType.DBVT,
-                8
+                4
         );
     }
 
@@ -57,9 +57,7 @@ public class BulletWorld extends PhysicsWorld {
         }
         rigid.setPhysicsLocation(new Vector3f(body.vec.x, body.vec.y, body.vec.z));
         rigid.setPhysicsRotation(new Quaternion(-body.quat.x, -body.quat.y, -body.quat.z, body.quat.w));
-        if (body.isStatic) {
-            rigid.setMass(0.0f);
-        }
+        if (body.isStatic) rigid.setMass(0.0f);
         space.add(rigid);
         bodies.add(Pair.of(body, rigid));
     }

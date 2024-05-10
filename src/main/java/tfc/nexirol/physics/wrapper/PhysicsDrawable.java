@@ -17,6 +17,16 @@ public class PhysicsDrawable implements Drawable, InstanceKey, Instanceable {
     Consumer<CommandBuffer> prepare;
     RigidBody body;
 
+    abstract class PhysKey implements InstanceKey {
+        InstanceKey mimicing;
+
+        public PhysKey(InstanceKey mimicing) {
+            this.mimicing = mimicing;
+        }
+    }
+
+    InstanceKey mimic;
+
     public PhysicsDrawable(Instanceable graphics, BiConsumer<CommandBuffer, Integer> setup, Consumer<CommandBuffer> prepare, RigidBody body) {
         if (graphics instanceof Drawable drawable) this.drawable = drawable;
         this.graphics = graphics;
@@ -24,6 +34,35 @@ public class PhysicsDrawable implements Drawable, InstanceKey, Instanceable {
         this.setup = setup;
         this.prepare = prepare;
         this.body = body;
+
+        mimic = new PhysKey(key) {
+            @Override
+            public void bind(CommandBuffer commandBuffer) {
+                key.bind(commandBuffer);
+            }
+
+            @Override
+            public void draw(CommandBuffer commandBuffer, GraphicsPipeline graphicsPipeline, int i) {
+                key.draw(commandBuffer, graphicsPipeline, i);
+            }
+
+            @Override
+            public void prepareCall(CommandBuffer commandBuffer) {
+                prepare.accept(commandBuffer);
+            }
+
+            @Override
+            public int hashCode() {
+                return key.hashCode();
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof PhysKey physKey)
+                    return physKey.mimicing.equals(mimicing);
+                return false;
+            }
+        };
     }
 
     @Override
@@ -53,7 +92,7 @@ public class PhysicsDrawable implements Drawable, InstanceKey, Instanceable {
 
     @Override
     public InstanceKey comparator() {
-        return key;
+        return mimic;
     }
 
     @Override
@@ -64,5 +103,15 @@ public class PhysicsDrawable implements Drawable, InstanceKey, Instanceable {
     @Override
     public void prepareCall(CommandBuffer commandBuffer) {
         prepare.accept(commandBuffer);
+    }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false;
     }
 }

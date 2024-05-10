@@ -10,6 +10,7 @@ import tfc.renirol.frontend.rendering.enums.BindPoint;
 import tfc.renirol.frontend.rendering.enums.DescriptorType;
 import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
 import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
+import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayout;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayoutInfo;
@@ -17,6 +18,7 @@ import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorSet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 // TODO: move to reni
 public class SmartShader implements ReniDestructable {
@@ -29,6 +31,7 @@ public class SmartShader implements ReniDestructable {
     final DescriptorPool pool;
     DescriptorSet set;
     DescriptorLayoutInfo[] infos;
+    BufferDescriptor[] descriptors;
 
     UniformData constants;
 
@@ -38,11 +41,16 @@ public class SmartShader implements ReniDestructable {
             UniformData... data
     ) {
         ArrayList<DescriptorLayoutInfo> infos = new ArrayList<>();
+        ArrayList<BufferDescriptor> descs = new ArrayList<>();
         for (UniformData datum : data)
             if (datum.info != null)
                 infos.add(datum.info);
-            else constants = datum;
+            else if (datum.descriptor != null)
+                descs.add(datum.descriptor);
+            else
+                constants = datum;
         this.infos = infos.toArray(new DescriptorLayoutInfo[0]);
+        this.descriptors = descs.toArray(new BufferDescriptor[0]);
 
         pool = new DescriptorPool(
                 device,
@@ -70,7 +78,6 @@ public class SmartShader implements ReniDestructable {
     }
 
     public void prepare() {
-        int i = 0;
         for (UniformData datum : data) {
             if (datum.info != null) {
                 set.bind(
@@ -99,7 +106,11 @@ public class SmartShader implements ReniDestructable {
         }
     }
 
-    public void bind(PipelineState state) {
+    public void bind(PipelineState state, BufferDescriptor... descriptors) {
         state.descriptorLayouts(layout);
+        ArrayList<BufferDescriptor> collected = new ArrayList<>();
+        collected.addAll(Arrays.asList(descriptors));
+        collected.addAll(Arrays.asList(this.descriptors));
+        state.vertexInput(collected.toArray(new BufferDescriptor[0]));
     }
 }

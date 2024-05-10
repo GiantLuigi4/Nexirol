@@ -75,10 +75,11 @@ public class Shaders {
     public static final UniformData cubeInstanceData = new UniformData(
             false, DataLayout.SCALAR,
             new DataFormat(
-                    new DataElement(NumericPrimitive.FLOAT, 3, 1000),
-                    new DataElement(NumericPrimitive.FLOAT, 4, 1000),
-                    new DataElement(NumericPrimitive.FLOAT, 3, 1000),
-                    new DataElement(NumericPrimitive.FLOAT, 4, 1000)
+                    new DataElement(
+                            NumericPrimitive.FLOAT,
+                            3 + 4 + 3 + 4,
+                            1000
+                    )
             ),
             new ShaderStageFlags[]{ShaderStageFlags.VERTEX},
             1

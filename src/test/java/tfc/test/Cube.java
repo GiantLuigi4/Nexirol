@@ -75,8 +75,6 @@ public class Cube {
         desc0.attribute(0, 0, AttributeFormat.RGBA32_FLOAT, 0);
         desc0.attribute(0, 1, AttributeFormat.RGB32_FLOAT, format.offset(VertexElements.NORMAL_XYZ));
 
-        state.vertexInput(desc0);
-
         // TODO: ideally this stuff would be abstracted away more
         final DescriptorPool pool = new DescriptorPool(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -127,10 +125,10 @@ public class Cube {
 //        }
 
         shaders.SKY.prepare();
-        shaders.SKY.bind(state);
+        shaders.SKY.bind(state, desc0);
         GraphicsPipeline pipeline0 = new GraphicsPipeline(state, pass, shaders.SKY.shaders);
         shaders.CUBE.prepare();
-        shaders.CUBE.bind(state);
+        shaders.CUBE.bind(state, desc0);
         state.depthTest(true).depthMask(true);
         GraphicsPipeline pipeline1 = new GraphicsPipeline(state, pass, shaders.CUBE.shaders);
 

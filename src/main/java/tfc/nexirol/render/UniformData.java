@@ -3,12 +3,18 @@ package tfc.nexirol.render;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.vulkan.VK13;
+import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.VkDevice;
 import tfc.renirol.ReniContext;
+import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.enums.BufferUsage;
 import tfc.renirol.frontend.rendering.enums.DescriptorType;
+import tfc.renirol.frontend.rendering.enums.flags.AdvanceRate;
 import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.rendering.enums.prims.NumericPrimitive;
+import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
@@ -34,6 +40,7 @@ public class UniformData {
     IndexedElement[] indexedElements;
 
     DescriptorLayoutInfo info;
+    BufferDescriptor descriptor;
 
     public UniformData(boolean constant, DataLayout layout, DataFormat format, ShaderStageFlags[] stages, int binding) {
         this.format = format;
@@ -63,11 +70,25 @@ public class UniformData {
         indexedElements = elements.toArray(new IndexedElement[0]);
 
         if (!constant) {
-            info = new DescriptorLayoutInfo(
-                    binding,
-                    DescriptorType.UNIFORM_BUFFER,
-                    1, stages
-            );
+            if (
+                    layout == DataLayout.VERTEX ||
+                            layout == DataLayout.INSTANCE
+            ) {
+                descriptor = new BufferDescriptor(
+                        format
+                ).advance(switch (layout) {
+                    case VERTEX -> AdvanceRate.PER_VERTEX;
+                    case INSTANCE -> AdvanceRate.PER_INSTANCE;
+                    default -> throw new RuntimeException("HUH???");
+                });
+                descriptor.describe(binding);
+            } else {
+                info = new DescriptorLayoutInfo(
+                        binding,
+                        DescriptorType.UNIFORM_BUFFER,
+                        1, stages
+                );
+            }
         }
     }
 
@@ -107,13 +128,14 @@ public class UniformData {
     public ByteBuffer get(int index) {
         IndexedElement indexed = indexedElements[index];
         ulStart = Math.min(ulStart, indexed.memoryOffset);
-        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (3 * 4));
-        ByteBuffer subBuf = bytes.position(indexed.memoryOffset).limit(indexed.element.size * indexed.element.type.size);
+        int sz = indexed.element.size * indexed.element.type.size;
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + sz);
+        ByteBuffer subBuf = bytes.position(indexed.memoryOffset).limit(indexed.memoryOffset + sz);
         subBuf = MemoryUtil.memByteBuffer(
                 MemoryUtil.memAddress(subBuf),
-                subBuf.limit() - subBuf.position()
+                sz
         );
-        bytes.position(0);
+        bytes.position(0).limit(bytes.capacity());
         return subBuf;
     }
 
@@ -209,16 +231,21 @@ public class UniformData {
         if (info != null) {
             bytes.position(0).limit(ulEnd);
             buffer.upload(ulStart, (ulEnd - ulStart), bytes);
+            ulStart = Integer.MAX_VALUE;
+            ulEnd = 0;
         }
     }
 
     public void upload(CommandBuffer buffer) {
         if (info != null) {
             bytes.position(0).limit(ulEnd);
+            // TODO: should use a submit queue and copy from a temporary submission buffer to the main buffer or smth
             buffer.bufferData(
                     this.buffer, ulStart,
                     (ulEnd - ulStart), bytes
             );
+            ulStart = Integer.MAX_VALUE;
+            ulEnd = 0;
         }
     }
 }
