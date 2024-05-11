@@ -1,4 +1,4 @@
-package tfc.test;
+package tfc.test.shared;
 
 import tfc.renirol.api.DeviceFeature;
 import tfc.renirol.frontend.hardware.device.ReniHardwareDevice;

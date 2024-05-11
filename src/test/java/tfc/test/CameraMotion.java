@@ -37,6 +37,8 @@ import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.renirol.frontend.windowing.listener.KeyboardListener;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
+import tfc.test.shared.ReniSetup;
+import tfc.test.shared.Scenario;
 import tfc.test.shared.Shaders;
 
 import java.nio.ByteBuffer;

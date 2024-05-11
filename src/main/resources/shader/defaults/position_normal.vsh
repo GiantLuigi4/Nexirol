@@ -1,5 +1,5 @@
 #version 450
-#extension GL_EXT_scalar_block_layout : enable
+#extension GL_EXT_scalar_block_layout: enable
 
 // ======= MODEL DATA =======
 layout (location = 0) in vec4 Position;
@@ -25,22 +25,13 @@ layout (location = 5) in vec4 ColorMod;
 #include <shader/util/quat_math.glsl>
 
 void main() {
-    float amt = 1;
-
     //@formatter:off
     vec4 coord = rotate(Position * vec4(Scl, 1), Rotation)
-        + vec4(Offset, 0);
-    wsCoord = coord.xyz;
+            + vec4(Offset, 0);
     //@formatter:on
 
+    wsCoord = coord.xyz;
     gl_Position = projectionMatrix * modelViewMatrix * coord;
-
-    vec3 n = Normal;
-    n = rotate(vec4(n, 0), (Rotation)).xyz;
-
-//    amt = dot(n * inverse(mat3(modelViewMatrix)), normalize(vec3(0.75, 0.9, -0.5)));
-//    amt = dot(n, normalize(vec3(0.75, 0.9, -0.5)));
     color = ColorMod;
-
-    normal = n;
+    normal = rotate(vec4(Normal, 0), Rotation).xyz;
 }

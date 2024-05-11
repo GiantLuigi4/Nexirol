@@ -1,9 +1,5 @@
 package tfc.test;
 
-import org.joml.Vector4f;
-import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
-import tfc.test.data.VertexElements;
-import tfc.test.data.VertexFormats;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
@@ -11,12 +7,7 @@ import org.lwjgl.vulkan.VK13;
 import org.lwjgl.vulkan.VkDevice;
 import tfc.nexirol.math.Matrices;
 import tfc.nexirol.primitives.CubePrimitive;
-import tfc.nexirol.render.ShaderAttachment;
 import tfc.nexirol.render.UniformData;
-import tfc.nexirol.render.glsl.ImportProcessor;
-import tfc.nexirol.render.glsl.MultiProcessor;
-import tfc.nexirol.render.glsl.PreProcessor;
-import tfc.nexirol.render.glsl.SequenceProcessor;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
@@ -25,22 +16,20 @@ import tfc.renirol.frontend.rendering.enums.DescriptorType;
 import tfc.renirol.frontend.rendering.enums.ImageLayout;
 import tfc.renirol.frontend.rendering.enums.Operation;
 import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.rendering.enums.format.AttributeFormat;
 import tfc.renirol.frontend.rendering.enums.masks.DynamicStateMasks;
 import tfc.renirol.frontend.rendering.enums.modes.CullMode;
-import tfc.renirol.frontend.rendering.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.rendering.pass.RenderPass;
 import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
-import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
+import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
-import tfc.renirol.util.ShaderCompiler;
+import tfc.test.data.VertexElements;
+import tfc.test.data.VertexFormats;
+import tfc.test.shared.ReniSetup;
 import tfc.test.shared.Shaders;
-
-import java.io.InputStream;
 
 public class Cube {
     public static void main(String[] args) {
@@ -90,21 +79,21 @@ public class Cube {
 //            );
 //
 //            layout = new DescriptorLayout(
-//                    tfc.test.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+//                    tfc.test.shared.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
 //                    0, info
 //            );
 //
 //            info.destroy();
 //        }
 //        DescriptorSet set = new DescriptorSet(
-//                tfc.test.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+//                tfc.test.shared.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
 //                pool, layout
 //        );
 //        state.descriptorLayouts(layout);
 
 //        InputStream is = PrimaryTest.class.getClassLoader().getResourceAsStream("test/texture/texture.png");
 //        Texture texture = new Texture(
-//                tfc.test.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+//                tfc.test.shared.ReniSetup.GRAPHICS_CONTEXT.getLogical(),
 //                TextureFormat.PNG, TextureChannels.RGBA,
 //                BitDepth.DEPTH_8, is
 //        );

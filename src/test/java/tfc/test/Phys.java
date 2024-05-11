@@ -32,6 +32,7 @@ import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
+import tfc.test.shared.ReniSetup;
 import tfc.test.shared.Shaders;
 
 import java.nio.ByteBuffer;

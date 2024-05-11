@@ -12,7 +12,6 @@ import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.util.ShaderCompiler;
 import tfc.test.Cube;
-import tfc.test.ReniSetup;
 
 import java.io.InputStream;
 
@@ -100,7 +99,7 @@ public class Shaders {
         cubeInstanceData.getDescriptor().attribute(1, 5, AttributeFormat.RGBA32_FLOAT, 40);
 
         compiler.setupGlsl();
-        compiler.debug();
+//        compiler.debug();
         PreProcessor processor = new SequenceProcessor(
                 new ImportProcessor(
                         (fl) -> Cube.class.getClassLoader().getResourceAsStream(fl)
