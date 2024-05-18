@@ -1,6 +1,6 @@
 package tfc.test.data;
 
-import tfc.renirol.frontend.rendering.enums.prims.NumericPrimitive;
+import tfc.renirol.frontend.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 
 public class VertexElements {

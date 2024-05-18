@@ -97,7 +97,7 @@ dependencies {
     implementation "com.code-disaster.steamworks4j:steamworks4j:${steamworks4jVersion}"
     implementation "com.code-disaster.steamworks4j:steamworks4j-server:${steamworks4j_serverVersion}"
 
-    extraLibs "tfc:Renirol:1.0-SNAPSHOT1"
+    extraLibs "tfc:Renirol:1.0-SNAPSHOT"
 
     configurations.implementation.extendsFrom(configurations.extraLibs)
 }

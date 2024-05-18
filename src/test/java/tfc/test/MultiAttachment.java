@@ -16,18 +16,18 @@ import tfc.nexirol.physics.wrapper.RigidBody;
 import tfc.nexirol.physics.wrapper.shape.Cube;
 import tfc.nexirol.primitives.CubePrimitive;
 import tfc.nexirol.render.UniformData;
+import tfc.renirol.frontend.enums.DescriptorType;
+import tfc.renirol.frontend.enums.ImageLayout;
+import tfc.renirol.frontend.enums.Operation;
+import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
+import tfc.renirol.frontend.enums.flags.SwapchainUsage;
+import tfc.renirol.frontend.enums.format.AttributeFormat;
+import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
+import tfc.renirol.frontend.enums.modes.CullMode;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
-import tfc.renirol.frontend.rendering.enums.DescriptorType;
-import tfc.renirol.frontend.rendering.enums.ImageLayout;
-import tfc.renirol.frontend.rendering.enums.Operation;
-import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.rendering.enums.flags.SwapchainUsage;
-import tfc.renirol.frontend.rendering.enums.format.AttributeFormat;
-import tfc.renirol.frontend.rendering.enums.masks.DynamicStateMasks;
-import tfc.renirol.frontend.rendering.enums.modes.CullMode;
 import tfc.renirol.frontend.rendering.pass.RenderPass;
 import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
@@ -48,7 +48,7 @@ import java.nio.FloatBuffer;
 
 public class MultiAttachment {
     public static void main(String[] args) {
-        System.setProperty("joml.nounsafe", "true");
+//        System.setProperty("joml.nounsafe", "true");
         Scenario.useWinNT = false;
 //        Scenario.useRenderDoc = false;
         ReniSetup.initialize();
@@ -451,13 +451,16 @@ public class MultiAttachment {
 
                 buffer.end();
 
+                long nt = System.currentTimeMillis();
                 ReniSetup.GRAPHICS_CONTEXT.submitFrame(buffer);
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS).await();
+//                ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS).await();
 
                 ReniSetup.WINDOW.swapAndPollSize();
                 GLFWWindow.poll();
+                long tt = System.currentTimeMillis();
+//                System.out.println(1000d / (tt - nt));
 
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+//                ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
 
                 VK13.nvkDestroyFramebuffer(ReniSetup.GRAPHICS_CONTEXT.getLogical().getDirect(VkDevice.class), fbo, 0);
             }

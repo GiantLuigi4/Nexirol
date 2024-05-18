@@ -114,4 +114,9 @@ public class PhysicsDrawable implements Drawable, InstanceKey, Instanceable {
     public boolean equals(Object obj) {
         return false;
     }
+
+    @Override
+    public boolean visible() {
+        return Drawable.super.visible();
+    }
 }

@@ -2,9 +2,9 @@ package tfc.nexirol.render;
 
 import org.lwjgl.util.shaderc.Shaderc;
 import tfc.nexirol.render.glsl.PreProcessor;
+import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.hardware.device.ReniLogicalDevice;
 import tfc.renirol.frontend.rendering.command.shader.Shader;
-import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.util.ShaderCompiler;
 
 import java.util.Arrays;

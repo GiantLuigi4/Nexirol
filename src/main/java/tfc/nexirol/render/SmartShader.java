@@ -1,22 +1,19 @@
 package tfc.nexirol.render;
 
+import tfc.renirol.frontend.enums.BindPoint;
+import tfc.renirol.frontend.enums.DescriptorType;
+import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
 import tfc.renirol.frontend.hardware.device.ReniLogicalDevice;
-import tfc.renirol.frontend.hardware.util.ReniDestructable;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
 import tfc.renirol.frontend.rendering.command.shader.Shader;
-import tfc.renirol.frontend.rendering.enums.BindPoint;
-import tfc.renirol.frontend.rendering.enums.DescriptorType;
-import tfc.renirol.frontend.rendering.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.rendering.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
-import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
-import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayout;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayoutInfo;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorSet;
+import tfc.renirol.itf.ReniDestructable;
 
 import java.util.ArrayList;
 import java.util.Arrays;

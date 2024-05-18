@@ -1,13 +1,11 @@
 package tfc.nexirol.primitives;
 
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.vulkan.VK13;
-import org.lwjgl.vulkan.VkCommandBuffer;
+import tfc.renirol.frontend.enums.BufferUsage;
+import tfc.renirol.frontend.enums.IndexSize;
 import tfc.renirol.frontend.hardware.device.ReniLogicalDevice;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
-import tfc.renirol.frontend.rendering.enums.BufferUsage;
-import tfc.renirol.frontend.rendering.enums.IndexSize;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
 import tfc.renirol.frontend.reni.draw.batch.Drawable;
@@ -16,7 +14,6 @@ import tfc.renirol.frontend.reni.draw.instance.Instanceable;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Objects;
 
@@ -292,5 +289,10 @@ public class CubePrimitive implements Instanceable, Drawable, InstanceKey {
 
     @Override
     public void prepareCall(CommandBuffer commandBuffer) {
+    }
+
+    @Override
+    public boolean visible() {
+        return Drawable.super.visible();
     }
 }

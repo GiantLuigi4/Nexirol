@@ -15,15 +15,28 @@ vec4 mul(vec4 q0, vec4 q1) {
 
 /* rotates a vector */
 vec4 rotate(vec4 point, vec4 quat) {
-    float xx = quat.x * quat.x, yy = quat.y * quat.y, zz = quat.z * quat.z, ww = quat.w * quat.w;
-    float xy = quat.x * quat.y, xz = quat.x * quat.z, yz = quat.y * quat.z, xw = quat.x * quat.w;
-    float zw = quat.z * quat.w, yw = quat.y * quat.w, k = 1 / (xx + yy + zz + ww);
-    float x = point.x;
-    float y = point.y;
-    float z = point.z;
-    return vec4(fma((xx - yy - zz + ww) * k, x, fma(2 * (xy - zw) * k, y, (2 * (xz + yw) * k) * z)),
-                    fma(2 * (xy + zw) * k, x, fma((yy - xx - zz + ww) * k, y, (2 * (yz - xw) * k) * z)),
-                    fma(2 * (xz - yw) * k, x, fma(2 * (yz + xw) * k, y, ((zz - xx - yy + ww) * k) * z)), point.w);
+    float
+    // === squares ===
+    xx = quat.x * quat.x,
+    yy = quat.y * quat.y,
+    zz = quat.z * quat.z,
+    ww = quat.w * quat.w,
+
+    // === pairs ===
+    xy = quat.x * quat.y,
+    xz = quat.x * quat.z,
+    yz = quat.y * quat.z,
+    xw = quat.x * quat.w,
+    zw = quat.z * quat.w,
+    yw = quat.y * quat.w,
+
+    // === ks ===
+    k = 1 / (xx + yy + zz + ww),
+    two_k = 2 * k;
+
+    return vec4(fma((xx - yy - zz + ww) * k, point.x, fma(two_k * (xy - zw), point.y, (two_k * (xz + yw)) * point.z)),
+                fma(two_k * (xy + zw), point.x, fma((yy - xx - zz + ww) * k, point.y, (two_k * (yz - xw)) * point.z)),
+                fma(two_k * (xz - yw), point.x, fma(two_k * (yz + xw), point.y, ((zz - xx - yy + ww) * k) * point.z)), point.w);
 }
 
 /* constructs a quaternion from an axis angle */

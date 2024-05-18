@@ -23,10 +23,9 @@ layout(binding = 0) uniform Matrices {
 void main() {
     normalOut = vec4(normal, 1.0);
 
-    float amt = dot(normal, normalize(vec3(0.75, 0.9, -0.5) * 300. - wsCoord));
-    if (amt < 0) amt *= 0;
-    colorOut = vec4(amt, amt, amt, 1) * color;
-
-    float dAdd = distance(wsCoord.xyz, vec3(0.75, 0.9, -0.5) * 300.);
-    colorOut = vec4(1-(dAdd / 1000.)) * colorOut;
+    vec3 constantVec = vec3(0.75, 0.9, -0.5) * 300.;
+    float amt = dot(normal, normalize(constantVec - wsCoord));
+    amt = max(0.0, amt);
+    float dAdd = distance(wsCoord.xyz, constantVec);
+    colorOut = vec4(vec3(amt) * color.xyz * vec3(1-(dAdd / 1000.)), color.a);
 }

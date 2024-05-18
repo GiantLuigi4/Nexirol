@@ -106,7 +106,7 @@ void main() {
                     ScatterColor.brga * vec4(0.0, 1, 0.0, 1),
                     clamp((1 - ((1 - ccord) * (cscale * cscale))) - 0.75, 0.0, 0.25) * 1.5
                 ) * 3.0,
-                (1 - ccord) * (cscale * cscale)
+                (1 - ccord) * (cscale * cscale) * abs(u)
             );
 
             // makes colors far away from the sun darker

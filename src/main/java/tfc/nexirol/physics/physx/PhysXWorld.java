@@ -5,7 +5,6 @@ import physx.common.*;
 import physx.extensions.PxRigidBodyExt;
 import physx.geometry.PxBoxGeometry;
 import physx.physics.*;
-import physx.support.PxActorPtr;
 import tfc.nexirol.physics.wrapper.PhysicsWorld;
 import tfc.nexirol.physics.wrapper.RigidBody;
 import tfc.nexirol.physics.wrapper.shape.Cube;
@@ -59,57 +58,19 @@ public class PhysXWorld extends PhysicsWorld {
         sceneDesc.setDynamicTreeSecondaryPruner(PxDynamicTreeSecondaryPrunerEnum.eBUCKET);
         sceneDesc.setBroadPhaseType(PxBroadPhaseTypeEnum.ePABP);
 
-        sceneDesc.setDynamicBVHBuildStrategy(PxBVHBuildStrategyEnum.eFAST);
-        sceneDesc.setStaticBVHBuildStrategy(PxBVHBuildStrategyEnum.eFAST);
+        sceneDesc.setDynamicBVHBuildStrategy(PxBVHBuildStrategyEnum.eSAH);
+        sceneDesc.setStaticBVHBuildStrategy(PxBVHBuildStrategyEnum.eSAH);
 
         sceneDesc.setSolverType(PxSolverTypeEnum.ePGS);
-        sceneDesc.setSolverBatchSize(sceneDesc.getSolverBatchSize() * 2);
+//        sceneDesc.setSolverBatchSize(sceneDesc.getSolverBatchSize() * 16);
+//        sceneDesc.setSolverArticulationBatchSize(sceneDesc.getSolverArticulationBatchSize() * 16);
 
         // TODO: cuda
         sceneDesc.getGravity().setY(-9.81f);
 
-        sceneDesc.setCcdThreshold(0f);
-
-        sceneDesc.setKineKineFilteringMode(PxPairFilteringModeEnum.eKEEP);
-        sceneDesc.setStaticKineFilteringMode(PxPairFilteringModeEnum.eKEEP);
-        PxSimulationEventCallbackImpl cb = new PxSimulationEventCallbackImpl() {
-            @Override
-            public void onConstraintBreak(PxConstraintInfo constraints, int count) {
-                super.onConstraintBreak(constraints, count);
-                System.out.println("!");
-            }
-
-            @Override
-            public void onWake(PxActorPtr actors, int count) {
-                super.onWake(actors, count);
-                System.out.println("!");
-            }
-
-            @Override
-            public void onSleep(PxActorPtr actors, int count) {
-                super.onSleep(actors, count);
-                System.out.println("!");
-            }
-
-            @Override
-            public void onContact(PxContactPairHeader pairHeader, PxContactPair pairs, int nbPairs) {
-                super.onContact(pairHeader, pairs, nbPairs);
-                System.out.println("!");
-            }
-
-            @Override
-            public void onTrigger(PxTriggerPair pairs, int count) {
-                super.onTrigger(pairs, count);
-                System.out.println("!");
-            }
-        };
-        sceneDesc.setSimulationEventCallback(cb);
-
         physics.createScene(sceneDesc);
 
         scene = physics.createScene(sceneDesc);
-//        scene.setCCDMaxPasses(128);
-//        scene.setCCDMaxSeparation(1f);
     }
 
 //    PxMaterial material = physics.createMaterial(
@@ -183,13 +144,16 @@ public class PhysXWorld extends PhysicsWorld {
     ArrayList<Pair<RigidBody, PxRigidActor>> bodies = new ArrayList<>();
 
     public void tick() {
+        long nt = System.currentTimeMillis();
         scene.simulate(0.016f);
         scene.fetchResults(true);
+        long tt = System.currentTimeMillis();
+//        System.out.println(1000d / (tt - nt));
         for (Pair<RigidBody, PxRigidActor> body : bodies) {
             PxVec3 vec3 = body.right().getGlobalPose().getP();
             PxQuat quat = body.right().getGlobalPose().getQ();
             body.left().setPosition(vec3.getX(), vec3.getY(), vec3.getZ());
-            body.left().setOrientation(-quat.getX(), -quat.getY(), -quat.getZ(), quat.getW());
+            body.left().setOrientation(-quat.getX(), -quat.getY(), -quat.getZ(), -quat.getW());
             body.left().update();
         }
     }
