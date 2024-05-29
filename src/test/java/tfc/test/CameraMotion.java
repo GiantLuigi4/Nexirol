@@ -4,8 +4,6 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.vulkan.VK13;
-import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.nexirol.math.Matrices;
 import tfc.nexirol.physics.physx.PhysXWorld;
@@ -27,7 +25,6 @@ import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
-import tfc.renirol.frontend.rendering.pass.RenderPass;
 import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
@@ -53,11 +50,11 @@ public class CameraMotion {
 
         Shaders shaders = new Shaders();
 
-        final RenderPass pass;
-        final RenderPass pass1;
+        final RenderPassInfo pass;
+        final RenderPassInfo pass1;
         {
-            RenderPassInfo info = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass = info.colorAttachment(
+            pass = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
+            pass.colorAttachment(
                     Operation.CLEAR, Operation.PERFORM,
                     ImageLayout.UNDEFINED, ImageLayout.PRESENT,
                     ReniSetup.selector
@@ -65,11 +62,10 @@ public class CameraMotion {
                     Operation.CLEAR, Operation.PERFORM,
                     ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     ReniSetup.DEPTH_FORMAT
-            ).dependency().subpass().create();
-            info.destroy();
+            );
 
-            info = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass1 = info.colorAttachment(
+            pass1 = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
+            pass1.colorAttachment(
                     Operation.PERFORM, Operation.PERFORM,
                     ImageLayout.UNDEFINED, ImageLayout.PRESENT,
                     ReniSetup.selector
@@ -77,8 +73,7 @@ public class CameraMotion {
                     Operation.PERFORM, Operation.PERFORM,
                     ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     ReniSetup.DEPTH_FORMAT
-            ).dependency().subpass().create();
-            info.destroy();
+            );
         }
 
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
@@ -102,11 +97,11 @@ public class CameraMotion {
         shaders.SKY.prepare();
         shaders.SKY.bind(state, desc0);
         state.depthTest(false).depthMask(false);
-        GraphicsPipeline pipeline0 = new GraphicsPipeline(state, pass, shaders.SKY.shaders);
+        GraphicsPipeline pipeline0 = new GraphicsPipeline(pass, state, shaders.SKY.shaders);
         shaders.CUBE.prepare();
         shaders.CUBE.bind(state, desc0);
         state.depthTest(true).depthMask(true);
-        GraphicsPipeline pipeline1 = new GraphicsPipeline(state, pass, shaders.CUBE.shaders);
+        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.CUBE.shaders);
 
         CubePrimitive cube = new CubePrimitive(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -129,7 +124,7 @@ public class CameraMotion {
 //            PhysicsWorld world = new BulletWorld();
             PhysicsWorld world = new PhysXWorld();
 
-            final int MAX_INSTANCES = 50_000;
+            final int MAX_INSTANCES = 64_000;
             final int SHADER_MAX_INSTANCES = 5_000;
             InstanceCollection collection = new InstanceCollection(
                     (collection1) -> {
@@ -138,7 +133,6 @@ public class CameraMotion {
                     }
             );
 
-            long[] frameHandle = new long[1];
             VkExtent2D[] extent2D = new VkExtent2D[1];
 
             // ground
@@ -183,7 +177,7 @@ public class CameraMotion {
                             } else {
                                 cmd.endPass();
                                 Shaders.cubeInstanceData.upload(cmd);
-                                cmd.beginPass(pass1, frameHandle[0], extent2D[0]);
+                                cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
                             }
                         },
                         body
@@ -235,7 +229,7 @@ public class CameraMotion {
                             } else {
                                 cmd.endPass();
                                 Shaders.cubeInstanceData.upload(cmd);
-                                cmd.beginPass(pass1, frameHandle[0], extent2D[0]);
+                                cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
                             }
                         },
                         body
@@ -386,14 +380,12 @@ public class CameraMotion {
                 }
 
                 ReniSetup.GRAPHICS_CONTEXT.prepareFrame(ReniSetup.WINDOW);
-                long fbo = ReniSetup.GRAPHICS_CONTEXT.getFrameHandle(pass);
-                frameHandle[0] = fbo;
                 extent2D[0] = ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents();
 
                 buffer.begin();
 
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
-                buffer.beginPass(pass, fbo, ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents());
+                buffer.beginPass(pass, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents());
                 {
                     buffer.startLabel("Sky", 0, 0.5f, 0, 0.5f);
 
@@ -437,8 +429,6 @@ public class CameraMotion {
                 GLFWWindow.poll();
 
                 ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
-
-                VK13.nvkDestroyFramebuffer(ReniSetup.GRAPHICS_CONTEXT.getLogical().getDirect(VkDevice.class), fbo, 0);
             }
             buffer.destroy();
         } catch (Throwable err) {

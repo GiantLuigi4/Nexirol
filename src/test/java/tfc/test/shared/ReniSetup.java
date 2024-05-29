@@ -8,6 +8,7 @@ import tfc.renirol.ReniContext;
 import tfc.renirol.Renirol;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.hardware.device.Vendors;
+import tfc.renirol.frontend.hardware.device.feature.DynamicRendering;
 import tfc.renirol.frontend.hardware.device.support.image.ReniSwapchainCapabilities;
 import tfc.renirol.frontend.hardware.util.DeviceQuery;
 import tfc.renirol.frontend.hardware.util.ReniHardwareCapability;
@@ -65,6 +66,7 @@ public class ReniSetup {
                         .require(ReniHardwareCapability.SUPPORTS_INDICES.configured(
                                 ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER
                         ))
+                        .require(ReniHardwareCapability.DYNAMIC_RENDERNING)
                         .reniRecommended()
                         // if any integrated GPU meets the requirements, then filter out any non-dedicated GPU
 //                        .prioritizeIntegrated()
@@ -89,6 +91,7 @@ public class ReniSetup {
                                                 new ReniQueueType[]{ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER, ReniQueueType.COMPUTE} :
                                                 new ReniQueueType[]{ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER}
                                 )
+                                .with(DynamicRendering.INSTANCE)
                 ).create()
         );
         WINDOW.initContext(GRAPHICS_CONTEXT);

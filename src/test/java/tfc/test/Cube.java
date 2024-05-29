@@ -3,8 +3,6 @@ package tfc.test;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.vulkan.VK13;
-import org.lwjgl.vulkan.VkDevice;
 import tfc.nexirol.math.Matrices;
 import tfc.nexirol.primitives.CubePrimitive;
 import tfc.nexirol.render.UniformData;
@@ -19,7 +17,6 @@ import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
-import tfc.renirol.frontend.rendering.pass.RenderPass;
 import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
@@ -38,10 +35,10 @@ public class Cube {
 
         Shaders shaders = new Shaders();
 
-        final RenderPass pass;
+        final RenderPassInfo pass;
         {
-            RenderPassInfo info = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass = info.colorAttachment(
+            pass = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
+            pass.colorAttachment(
                     Operation.CLEAR, Operation.NONE,
                     ImageLayout.UNDEFINED, ImageLayout.PRESENT,
                     ReniSetup.selector
@@ -49,8 +46,7 @@ public class Cube {
                     Operation.CLEAR, Operation.NONE,
                     ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     ReniSetup.DEPTH_FORMAT
-            ).dependency().subpass().create();
-            info.destroy();
+            );
         }
 
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
@@ -115,11 +111,11 @@ public class Cube {
 
         shaders.SKY.prepare();
         shaders.SKY.bind(state, desc0);
-        GraphicsPipeline pipeline0 = new GraphicsPipeline(state, pass, shaders.SKY.shaders);
+        GraphicsPipeline pipeline0 = new GraphicsPipeline(pass, state, shaders.SKY.shaders);
         shaders.CUBE.prepare();
         shaders.CUBE.bind(state, desc0);
         state.depthTest(true).depthMask(true);
-        GraphicsPipeline pipeline1 = new GraphicsPipeline(state, pass, shaders.CUBE.shaders);
+        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.CUBE.shaders);
 
         CubePrimitive cube = new CubePrimitive(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -230,12 +226,11 @@ public class Cube {
                 }
 
                 ReniSetup.GRAPHICS_CONTEXT.prepareFrame(ReniSetup.WINDOW);
-                long fbo = ReniSetup.GRAPHICS_CONTEXT.getFrameHandle(pass);
 
                 buffer.begin();
 
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
-                buffer.beginPass(pass, fbo, ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents());
+                buffer.beginPass(pass, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents());
                 {
                     buffer.startLabel("Sky", 0, 0.5f, 0, 0.5f);
 
@@ -278,8 +273,6 @@ public class Cube {
                 GLFWWindow.poll();
 
                 ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
-
-                VK13.nvkDestroyFramebuffer(ReniSetup.GRAPHICS_CONTEXT.getLogical().getDirect(VkDevice.class), fbo, 0);
             }
             buffer.destroy();
         } catch (Throwable err) {
