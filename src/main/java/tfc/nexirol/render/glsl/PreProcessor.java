@@ -16,8 +16,8 @@ public abstract class PreProcessor {
 		Line prev = null;
 		for (Line ln : lns) {
 			if (prev != null && prev.ln != (ln.ln - 1)) {
-				if (ln.ln != -1)
-					builder.append("#line ").append(ln.ln + 1).append("\n");
+//				if (ln.ln != -1)
+//					builder.append("#line ").append(ln.ln + 1).append("\n");
 			}
 			builder.append(ln.text.replace("\n", "")).append("\n");
 			prev = ln;

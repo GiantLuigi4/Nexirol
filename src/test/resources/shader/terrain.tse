@@ -1,0 +1,77 @@
+#version 450
+#extension GL_EXT_scalar_block_layout: enable
+
+layout (quads, equal_spacing, ccw) in;
+
+// ======= UNIFORMS =======
+layout (binding = 0) uniform Matrices {
+    uniform mat4 projectionMatrix;
+    uniform mat4 modelViewMatrix;
+};
+
+// ======= INPUT DATA =======
+layout (location = 0) in ivec2[] offset;
+
+// ======= FRAGMENT DATA =======
+layout (location = 0) out vec3 wsCoordOut;
+layout (location = 1) out vec3 normalOut;
+
+// interpolation
+#include <shader/util/lerp_bilinear.glsl>
+
+// noise
+#include <shader/util/noise/hash.glsl>
+#include <shader/util/noise/simple.glsl>
+#include <shader/util/noise/perlin.glsl>
+
+void main() {
+    // get patch coordinate
+    float u = gl_TessCoord.x;
+    float v = gl_TessCoord.y;
+    vec2 uv = vec2(u, v);
+    vec4 oGin = transpose(modelViewMatrix) * modelViewMatrix[3].xyzw;
+
+    // ======= CONTROL POINTS =======
+    // retrieve control point position coordinates
+    vec4 p00 = gl_in[0].gl_Position;
+    vec4 p01 = gl_in[1].gl_Position;
+    vec4 p10 = gl_in[2].gl_Position;
+    vec4 p11 = gl_in[3].gl_Position;
+
+    // ======= POSITION =======
+    vec4 p = lerp(
+        p00, p10,
+        p01, p11,
+        uv
+    ) - vec4(0.5, 0, 0.5, 0) + vec4(
+        float(offset[0].x),
+        0,
+        float(offset[0].y),
+        0
+    );
+
+    // ======= SIZE & OFFSET =======
+    p.xyz *= 1000;
+    p.xz -= oGin.xz;
+    // ======= SNAP =======
+    p.xyz = round(p.xyz / 1000 * 64) * 1000 / 64;
+//    p.xz *= max((length(p.xz + oGin.xz) / 750), 1.);
+//    p.xyz = round(p.xyz / 1000 * 64) * 1000 / 64;
+    p.xz += oGin.xz;
+    if (p.x != 0 || p.z != 0) {
+//        p.xz = normalize(p.xz) * max(abs(p.x), abs(p.z));
+    }
+    p.w = 1.;
+
+    // ======= NOISE =======
+    float nz = modifiedPerlinNoise((p.xz - oGin.xz) / 10000., 8, vec2(23408, 23472));
+    p.y = nz * 1000;
+
+    wsCoordOut = p.xyz;
+
+    // TODO: this is important
+    normalOut = vec3(0, 1, 0);
+
+    // ======= OUTPUT VERT =======
+    gl_Position = projectionMatrix * vec4(mat3(modelViewMatrix) * (p.xyz + vec3(0, oGin.y, 0)), 1);
+}

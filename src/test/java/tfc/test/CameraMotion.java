@@ -18,8 +18,11 @@ import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
+import tfc.renirol.frontend.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
+import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
+import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.modes.CullMode;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
@@ -384,6 +387,26 @@ public class CameraMotion {
 
                 buffer.begin();
 
+                buffer.transition(
+                        ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
+                        StageMask.TOP_OF_PIPE,
+                        StageMask.COLOR_ATTACHMENT_OUTPUT,
+                        ImageLayout.UNDEFINED,
+                        ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
+                        AccessMask.NONE,
+                        AccessMask.COLOR_WRITE
+                );
+                buffer.transition(
+                        ReniSetup.GRAPHICS_CONTEXT.depthBuffer().getHandle(),
+                        StageMask.TOP_OF_PIPE,
+                        StageMask.FRAGMENT_TEST,
+                        ImageLayout.UNDEFINED,
+                        ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                        AccessMask.NONE,
+                        AccessMask.DEPTH_WRITE,
+                        SwapchainUsage.DEPTH
+                );
+
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
                 buffer.beginPass(pass, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents());
                 {
@@ -419,6 +442,16 @@ public class CameraMotion {
                 }
                 buffer.endPass();
                 buffer.endLabel();
+
+                buffer.transition(
+                        ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
+                        StageMask.COLOR_ATTACHMENT_OUTPUT,
+                        StageMask.BOTTOM_OF_PIPE,
+                        ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
+                        ImageLayout.PRESENT,
+                        AccessMask.COLOR_WRITE,
+                        AccessMask.NONE
+                );
 
                 buffer.end();
 

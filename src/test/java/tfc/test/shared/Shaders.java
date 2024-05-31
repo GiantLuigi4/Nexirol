@@ -14,6 +14,7 @@ import tfc.renirol.util.ShaderCompiler;
 import tfc.test.Cube;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class Shaders {
 
@@ -40,7 +41,7 @@ public class Shaders {
                     new DataElement(NumericPrimitive.FLOAT, 4 * 4),
                     new DataElement(NumericPrimitive.FLOAT, 4 * 4)
             ),
-            new ShaderStageFlags[]{ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT},
+            new ShaderStageFlags[]{ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT, ShaderStageFlags.TESSELATION_EVALUATION, ShaderStageFlags.TESSELATION_CONTROL},
             0
     );
     public static final UniformData skyData = new UniformData(
@@ -86,7 +87,16 @@ public class Shaders {
     );
 
     public final SmartShader SKY;
+    public final SmartShader TERRAIN;
     public final SmartShader CUBE;
+
+    public static final PreProcessor processor = new SequenceProcessor(
+            new ImportProcessor(
+                    (fl) -> Cube.class.getClassLoader().getResourceAsStream(fl)
+            ),
+            new MultiProcessor(true, false),
+            new ArrowOperatorProcessor()
+    );
 
     public Shaders() {
         matrices.setup(ReniSetup.GRAPHICS_CONTEXT);
@@ -99,14 +109,7 @@ public class Shaders {
         cubeInstanceData.getDescriptor().attribute(1, 5, AttributeFormat.RGBA32_FLOAT, 40);
 
         compiler.setupGlsl();
-//        compiler.debug();
-        PreProcessor processor = new SequenceProcessor(
-                new ImportProcessor(
-                        (fl) -> Cube.class.getClassLoader().getResourceAsStream(fl)
-                ),
-                new MultiProcessor(true, false),
-                new ArrowOperatorProcessor()
-        );
+        compiler.debug();
 
         SKY = new SmartShader(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -128,6 +131,40 @@ public class Shaders {
                 },
                 matrices, skyData
         );
+        TERRAIN = new SmartShader(
+                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                SKY_ATTACHMENTS = new ShaderAttachment[]{
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.VERTEX,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.vsh")),
+                                "terrain_vert", "main"
+                        ),
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.FRAGMENT,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.fsh")),
+                                "terrain_frag", "main"
+                        ),
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.TESSELATION_EVALUATION,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tse")),
+                                "terrain_tese", "main"
+                        ),
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.TESSELATION_CONTROL,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tsc")),
+                                "terrain_tesc", "main"
+                        )
+                },
+                matrices
+        );
         CUBE = new SmartShader(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 CUBE_ATTACHMENTS = new ShaderAttachment[]{
@@ -148,6 +185,10 @@ public class Shaders {
                 },
                 matrices, cubeInstanceData
         );
+    }
+
+    public static String process(String text) {
+        return PreProcessor.toText(processor.transform(PreProcessor.toLines(Arrays.asList(text.split("\n")))));
     }
 
     public void destroy() {

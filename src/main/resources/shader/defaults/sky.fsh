@@ -60,7 +60,6 @@ void main() {
 
     if (SunSize != 0) {
         vec3 sunCoord = normalize(rotate(vec4(0, 0, 1, 1), SunDir).xyz);
-        float iSunY = abs(sunCoord.y);
         float dSun = distance(normalize(coord.xyz), sunCoord.xyz) / SunSize;
 
         /* scattering */ {
@@ -87,7 +86,7 @@ void main() {
                     ScatterColor.brga * vec4(0.0, 1, 0.0, 1),
                     clamp((1-col) - 0.75, 0.0, 0.25) * 1.5
                 ) * 3.0,
-                col * iSunY
+                col
             );
             // create a ring around the horizon
             vec3 sun90 = normalize(rotate(vec4(0, 1, 0, 1), SunDir).xyz);
@@ -107,7 +106,7 @@ void main() {
                     ScatterColor.brga * vec4(0.0, 1, 0.0, 1),
                     clamp((1 - ((1 - ccord) * (cscale * cscale))) - 0.75, 0.0, 0.25) * 1.5
                 ) * 3.0,
-                (1 - ccord) * (cscale * cscale) * abs(u) * iSunY
+                (1 - ccord) * (cscale * cscale) * abs(u)
             );
 
             // makes colors far away from the sun darker
@@ -123,7 +122,7 @@ void main() {
             colorOut = mix(
                 vec4(0),
                 colorOut,
-                (1 - mul) * iSunY
+                1 - mul
             );
 
             // fades out lower part of skybox as sun sets

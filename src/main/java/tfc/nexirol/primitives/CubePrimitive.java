@@ -264,7 +264,7 @@ public class CubePrimitive implements Instanceable, Drawable, InstanceKey {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CubePrimitive that = (CubePrimitive) o;
-        return Float.compare(width, that.width) == 0 && Float.compare(height, that.height) == 0 && Float.compare(length, that.length) == 0;
+        return width == that.width && height == that.height && length == that.length;
     }
 
     @Override

@@ -1,11 +1,9 @@
 package tfc.test.shared;
 
-import org.lwjgl.vulkan.EXTDebugUtils;
-import org.lwjgl.vulkan.KHRSwapchain;
-import org.lwjgl.vulkan.NVLowLatency;
-import org.lwjgl.vulkan.VK13;
+import org.lwjgl.vulkan.*;
 import tfc.renirol.ReniContext;
 import tfc.renirol.Renirol;
+import tfc.renirol.backend.vk.util.VkUtil;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.hardware.device.Vendors;
 import tfc.renirol.frontend.hardware.device.feature.DynamicRendering;
@@ -119,7 +117,29 @@ public class ReniSetup {
                 ReniSetup.WINDOW.getHeight(),
                 selector,
                 Math.min(capabilities.surfaceCapabilities.minImageCount() + 2, capabilities.surfaceCapabilities.maxImageCount()),
-                capabilities.presentModes.get(0)
+                VkUtil.select(
+                        capabilities.presentModes,
+                        mode -> {
+                            switch (mode) {
+                                case KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR -> {
+                                    return 0;
+                                }
+                                case KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR -> {
+                                    return 3;
+                                }
+                                case KHRSurface.VK_PRESENT_MODE_FIFO_RELAXED_KHR -> {
+                                    return 2;
+                                }
+                                case KHRSurface.VK_PRESENT_MODE_FIFO_KHR -> {
+                                    return 1;
+                                }
+                                default -> {
+                                    System.err.println("Unknown present mode: " + mode);
+                                    return -1;
+                                }
+                            }
+                        }
+                )
         );
         if (Scenario.useDepth) {
             ReniSetup.GRAPHICS_CONTEXT.createDepth();
