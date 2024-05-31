@@ -1,5 +1,6 @@
 // requires: hash.glsl
 // requires: simple.glsl
+
 // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83#perlin-noise
 float perlinNoise(vec2 p, int res, vec2 seed) {
     float persistance = .5;

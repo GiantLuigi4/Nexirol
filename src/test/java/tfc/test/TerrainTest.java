@@ -316,10 +316,10 @@ public class TerrainTest {
 
                 ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
 
-//                try {
-//                    Thread.sleep(8);
-//                } catch (Throwable err) {
-//                }
+                try {
+                    Thread.sleep(8);
+                } catch (Throwable err) {
+                }
             }
             buffer.destroy();
         } catch (Throwable err) {

@@ -17,12 +17,27 @@ layout (location = 0) out vec3 wsCoordOut;
 layout (location = 1) out vec3 normalOut;
 
 // interpolation
-#include <shader/util/lerp_bilinear.glsl>
+#include <shader/util/math/lerp_bilinear.glsl>
 
 // noise
 #include <shader/util/noise/hash.glsl>
 #include <shader/util/noise/simple.glsl>
 #include <shader/util/noise/perlin.glsl>
+
+// normals
+#include <shader/util/math/normals.glsl>
+#line 29
+
+float hm(vec2 pos) {
+    float nz = modifiedPerlinNoise(pos / 10000., 8, vec2(23408, 23472));
+    return nz * 1000;
+}
+
+vec4 crd(vec4 src, vec2 oset) {
+    src.xz += oset;
+    src.y = hm(src.xz);
+    return src;
+}
 
 void main() {
     // get patch coordinate
@@ -51,26 +66,43 @@ void main() {
     );
 
     // ======= SIZE & OFFSET =======
-    p.xyz *= 1000;
+    float scl = 1000;
+    p.xyz *= scl;
     p.xz -= oGin.xz;
     // ======= SNAP =======
-    p.xyz = round(p.xyz / 1000 * 64) * 1000 / 64;
-//    p.xz *= max((length(p.xz + oGin.xz) / 750), 1.);
-//    p.xyz = round(p.xyz / 1000 * 64) * 1000 / 64;
+    float step = 1./10;
+    p.xyz = round(p.xyz / scl * 64) * scl / 64;
     p.xz += oGin.xz;
-    if (p.x != 0 || p.z != 0) {
+//    if (length(p.xz) > 1000) {
+//        p.xz += p.xz - (normalize(p.xz) * 1000);
 //        p.xz = normalize(p.xz) * max(abs(p.x), abs(p.z));
-    }
+//    }
     p.w = 1.;
 
     // ======= NOISE =======
-    float nz = modifiedPerlinNoise((p.xz - oGin.xz) / 10000., 8, vec2(23408, 23472));
-    p.y = nz * 1000;
+    vec4 pset = p;
+    pset.xz -= oGin.xz;
+    vec4 o_0_0 = crd(pset, vec2(0, 0));
+    vec4 o_0p1 = crd(pset, vec2(0, step));
+    vec4 op1_0 = crd(pset, vec2(step, 0));
+    vec4 o_0n1 = crd(pset, vec2(0, -step));
+    vec4 on1_0 = crd(pset, vec2(-step, 0));
+    p.y = o_0_0.y;
+
+    vec3 norm = (calculateNormal(
+        o_0_0.xyz,
+        o_0p1.xyz,
+        op1_0.xyz
+    ) + calculateNormal(
+        o_0_0.xyz,
+        o_0n1.xyz,
+        on1_0.xyz
+    )) * 0.5;
 
     wsCoordOut = p.xyz;
+    wsCoordOut.xz -= oGin.xz;
 
-    // TODO: this is important
-    normalOut = vec3(0, 1, 0);
+    normalOut = normalize(norm);
 
     // ======= OUTPUT VERT =======
     gl_Position = projectionMatrix * vec4(mat3(modelViewMatrix) * (p.xyz + vec3(0, oGin.y, 0)), 1);

@@ -63,6 +63,9 @@ void main() {
         float dSun = distance(normalize(coord.xyz), sunCoord.xyz) / SunSize;
 
         /* scattering */ {
+            float cMul = 1-abs(sunCoord.y);
+            cMul *= cMul;
+
             vec2 sunOpposite2D = normalize(vec2(sunCoord.xz));
             vec3 scatterOpposite = normalize(vec3(sunOpposite2D.x * 0.5, -1.2, sunOpposite2D.y * 0.5));
 
@@ -86,7 +89,7 @@ void main() {
                     ScatterColor.brga * vec4(0.0, 1, 0.0, 1),
                     clamp((1-col) - 0.75, 0.0, 0.25) * 1.5
                 ) * 3.0,
-                col
+                col * cMul
             );
             // create a ring around the horizon
             vec3 sun90 = normalize(rotate(vec4(0, 1, 0, 1), SunDir).xyz);
@@ -106,7 +109,7 @@ void main() {
                     ScatterColor.brga * vec4(0.0, 1, 0.0, 1),
                     clamp((1 - ((1 - ccord) * (cscale * cscale))) - 0.75, 0.0, 0.25) * 1.5
                 ) * 3.0,
-                (1 - ccord) * (cscale * cscale) * abs(u)
+                (1 - ccord) * (cscale * cscale) * abs(u) * cMul
             );
 
             // makes colors far away from the sun darker
