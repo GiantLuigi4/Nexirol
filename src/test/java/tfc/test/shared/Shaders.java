@@ -152,14 +152,14 @@ public class Shaders {
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.TESSELATION_EVALUATION,
-                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tse")),
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tese")),
                                 "terrain_tese", "main"
                         ),
                         new ShaderAttachment(
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.TESSELATION_CONTROL,
-                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tsc")),
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tesc")),
                                 "terrain_tesc", "main"
                         )
                 },

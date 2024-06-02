@@ -32,10 +32,9 @@ void main() {
 //    float dAdd = distance(wsCoord.xyz, constantVec);
     float dAdd = 0.;
 
-    float nz = simpleNoise(wsCoord.xz, 1, vec2(9842,3243));
+    float nz = simpleNoise(wsCoord.xz, 1);
     colorOut = vec4((1-nz)/8, nz / 2 + 0.5, nz / 8, 1);
     vec4 grassGreen = vec4(128. / 255., 154. / 255., 128. / 255., 255. / 255.);
     colorOut *= grassGreen;
-    colorOut = vec4(1);
     colorOut = colorOut * vec4(vec3(amt) * vec3(1-(dAdd / 1000.)), 1.);
 }

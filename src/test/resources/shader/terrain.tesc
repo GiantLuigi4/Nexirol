@@ -1,12 +1,16 @@
 #version 450
 
-in gl_PerVertex
-{
+in gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
     float[] gl_ClipDistance;
     float[] gl_CullDistance;
 } gl_in[gl_MaxPatchVertices];
+
+layout (binding = 0) uniform Matrices {
+    uniform mat4 projectionMatrix;
+    uniform mat4 modelViewMatrix;
+};
 
 layout (vertices = 4) out;
 

@@ -34,6 +34,9 @@ public class ShaderAttachment {
                 shaderStageFlags.bits,
                 file, entry
         );
+        if (!shader.compiledSuccessfully()) {
+            System.out.println(data);
+        }
     }
 
     public void destroy() {

@@ -22,7 +22,7 @@ layout (location = 3) in vec4 Rotation;
 layout (location = 4) in vec3 Scl;
 layout (location = 5) in vec4 ColorMod;
 
-#include <shader/util/quat_math.glsl>
+#include <shader/util/math/quats.glsl>
 
 void main() {
     //@formatter:off

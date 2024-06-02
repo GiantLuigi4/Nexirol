@@ -3,9 +3,9 @@ vec4 lerp(
     vec4 c01, vec4 c11,
     vec2 uv
 ) {
-    vec4 c0 = (c01 - c00) * uv.x + c00;
-    vec4 c1 = (c11 - c10) * uv.x + c10;
-    vec4 colorDst = (c1 - c0) * uv.y + c0;
+    vec4 c0 = mix(c00, c01, uv.x);
+    vec4 c1 = mix(c10, c11, uv.x);
+    vec4 colorDst = mix(c0, c1, uv.y);
     return colorDst;
 }
 
@@ -14,9 +14,9 @@ vec3 lerp(
     vec3 c01, vec3 c11,
     vec2 uv
 ) {
-    vec3 c0 = (c01 - c00) * uv.x + c00;
-    vec3 c1 = (c11 - c10) * uv.x + c10;
-    vec3 colorDst = (c1 - c0) * uv.y + c0;
+    vec3 c0 = mix(c00, c01, uv.x);
+    vec3 c1 = mix(c10, c11, uv.x);
+    vec3 colorDst = mix(c0, c1, uv.y);
     return colorDst;
 }
 
@@ -25,9 +25,9 @@ vec2 lerp(
     vec2 c01, vec2 c11,
     vec2 uv
 ) {
-    vec2 c0 = (c01 - c00) * uv.x + c00;
-    vec2 c1 = (c11 - c10) * uv.x + c10;
-    vec2 colorDst = (c1 - c0) * uv.y + c0;
+    vec2 c0 = mix(c00, c01, uv.x);
+    vec2 c1 = mix(c10, c11, uv.x);
+    vec2 colorDst = mix(c0, c1, uv.y);
     return colorDst;
 }
 
@@ -36,8 +36,8 @@ float lerp(
     float c01, float c11,
     vec2 uv
 ) {
-    float c0 = (c01 - c00) * uv.x + c00;
-    float c1 = (c11 - c10) * uv.x + c10;
-    float colorDst = (c1 - c0) * uv.y + c0;
+    float c0 = mix(c00, c01, uv.x);
+    float c1 = mix(c10, c11, uv.x);
+    float colorDst = mix(c0, c1, uv.y);
     return colorDst;
 }
