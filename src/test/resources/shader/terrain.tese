@@ -2,7 +2,7 @@
 #extension GL_EXT_scalar_block_layout: enable
 #extension GL_EXT_shader_explicit_arithmetic_types: enable
 
-layout (quads, equal_spacing, ccw) in;
+layout (quads, fractional_even_spacing, ccw) in;
 
 // ======= UNIFORMS =======
 layout (binding = 0) uniform Matrices {
@@ -29,11 +29,10 @@ layout (location = 1) out vec3 normalOut;
 #include <shader/util/noise/rand.glsl>
 #include <shader/util/noise/xoroshiro.glsl>
 #include <shader/util/noise/perlin_xoro.glsl>
-//#include <shader/util/noise/perlin.glsl>
 
 // normals
 #include <shader/util/math/normals.glsl>
-#line 29
+#line 36
 
 float hm(vec2 pos) {
     vec2 fp = floor(pos);
@@ -65,6 +64,30 @@ void main() {
     vec4 p10 = gl_in[2].gl_Position;
     vec4 p11 = gl_in[3].gl_Position;
 
+/*
+    bool ddiscard = true;
+    for (int i = 0; i < 4; i++) {
+        vec4 p = lerp(
+            p00, p10,
+            p01, p11,
+            uv
+        ) - vec4(0.5, 0, 0.5, 0) + vec4(
+            float(offset[0].x),
+            0,
+            float(offset[0].y),
+            0
+        );
+        vec4 pos = projectionMatrix * modelViewMatrix * p;
+        if (pos.w * pos.z > 0) {
+            ddiscard = false;
+        }
+    }
+    if (ddiscard) {
+        gl_Position = vec4(0);
+        return;
+    }
+*/
+
     // ======= POSITION =======
     vec4 p = lerp(
         p00, p10,
@@ -82,7 +105,7 @@ void main() {
     p.xyz *= scl;
     p.xz -= oGin.xz;
     // ======= SNAP =======
-    float step = 1. / 1000;
+    float step = 1. / scl;
     p.xyz = round(p.xyz / scl * 64) * scl / 64;
     p.xz += oGin.xz;
     p.w = 1.;

@@ -69,23 +69,23 @@ public class QuadPrimitive implements Instanceable, Drawable, InstanceKey {
             {
                 index = putVec3(
                         fb, index,
-                        width / 2, 0, height / 2,
-                        0, -1, 0
-                );
-                index = putVec3(
-                        fb, index,
-                        width / 2, 0, -height / 2,
-                        0, -1, 0
+                        -width / 2, 0, height / 2,
+                        0, 1, 0
                 );
                 index = putVec3(
                         fb, index,
                         -width / 2, 0, -height / 2,
-                        0, -1, 0
+                        0, 1, 0
                 );
                 index = putVec3(
                         fb, index,
-                        -width / 2, 0, height / 2,
-                        0, -1, 0
+                        width / 2, 0, -height / 2,
+                        0, 1, 0
+                );
+                index = putVec3(
+                        fb, index,
+                        width / 2, 0, height / 2,
+                        0, 1, 0
                 );
             }
             vbo.upload(0, buffer);

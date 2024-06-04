@@ -282,7 +282,7 @@ public class TerrainTest {
 
                     buffer.bindPipe(pipeline1);
                     shaders.TERRAIN.bindCommand(pipeline1, buffer);
-                    buffer.cullMode(CullMode.FRONT);
+                    buffer.cullMode(CullMode.BACK);
                     buffer.viewportScissor(
                             0, 0,
                             ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents().width(),
