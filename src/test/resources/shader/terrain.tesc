@@ -86,5 +86,27 @@ void main() {
         // Step 6: set the inner tessellation levels to the max of the two parallel edges
         gl_TessLevelInner[0] = max(tessLevel1, tessLevel3);
         gl_TessLevelInner[1] = max(tessLevel0, tessLevel2);
+
+        // TODO: frustum check?
+//        eyeSpacePos00 *= projectionMatrix;
+//        eyeSpacePos10 *= projectionMatrix;
+//        eyeSpacePos01 *= projectionMatrix;
+//        eyeSpacePos11 *= projectionMatrix;
+//        vec4 pForward = modelRotation * vec4(0, 0, 1, 1);
+//        float y = pForward.y * -sign(pForward.z) * sign(pForward.w);
+//        if (
+//            eyeSpacePos00.w < y * 1000 &&
+//            eyeSpacePos10.w < y * 1000 &&
+//            eyeSpacePos01.w < y * 1000 &&
+//            eyeSpacePos11.w < y * 1000
+//        ) {
+//            gl_TessLevelInner[0] = 0;
+//            gl_TessLevelInner[1] = 0;
+//
+//            gl_TessLevelOuter[0] = 0;
+//            gl_TessLevelOuter[1] = 0;
+//            gl_TessLevelOuter[2] = 0;
+//            gl_TessLevelOuter[3] = 0;
+//        }
     }
 }

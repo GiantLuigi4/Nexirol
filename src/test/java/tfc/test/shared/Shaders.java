@@ -20,6 +20,7 @@ public class Shaders {
 
     ShaderAttachment[] SKY_ATTACHMENTS;
     ShaderAttachment[] CUBE_ATTACHMENTS;
+    ShaderAttachment[] TERRAIN_ATTACHMENTS;
 
     public static String read(InputStream is) {
         try {
@@ -133,7 +134,7 @@ public class Shaders {
         );
         TERRAIN = new SmartShader(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
-                SKY_ATTACHMENTS = new ShaderAttachment[]{
+                TERRAIN_ATTACHMENTS = new ShaderAttachment[]{
                         new ShaderAttachment(
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -194,7 +195,13 @@ public class Shaders {
     public void destroy() {
         for (ShaderAttachment skyAttachment : SKY_ATTACHMENTS) skyAttachment.destroy();
         for (ShaderAttachment skyAttachment : CUBE_ATTACHMENTS) skyAttachment.destroy();
+        for (ShaderAttachment skyAttachment : TERRAIN_ATTACHMENTS) skyAttachment.destroy();
         SKY.destroy();
         CUBE.destroy();
+        TERRAIN.destroy();
+
+        matrices.destroy();
+        skyData.destroy();
+        cubeInstanceData.destroy();
     }
 }

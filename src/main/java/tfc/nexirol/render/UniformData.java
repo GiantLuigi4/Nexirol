@@ -15,13 +15,14 @@ import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayoutInfo;
+import tfc.renirol.itf.ReniDestructable;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 // TODO: move to reni
-public class UniformData {
+public class UniformData implements ReniDestructable {
     final DataFormat format;
     final ShaderStageFlags[] stages;
     final int binding;
@@ -44,7 +45,7 @@ public class UniformData {
         this.binding = binding;
         int offset = 0;
         ArrayList<IndexedElement> elements = new ArrayList<>();
-        System.out.println();
+//        System.out.println();
         for (DataElement element : format.elements) {
             if (layout == DataLayout.STANDARD) {
                 int alignment = Math.clamp(element.size, 0, 4) * element.type.size;
@@ -59,7 +60,7 @@ public class UniformData {
             for (int i = 0; i < element.arrayCount; i++) {
                 IndexedElement elem = new IndexedElement(offset, element);
                 elements.add(elem);
-                System.out.println(offset);
+//                System.out.println(offset);
                 offset += element.size * element.type.size;
             }
         }
@@ -262,5 +263,15 @@ public class UniformData {
             ulStart = Integer.MAX_VALUE;
             ulEnd = 0;
         }
+    }
+
+    @Override
+    public void destroy() {
+        if (descriptor != null)
+            descriptor.destroy();
+        if (info != null)
+            info.destroy();
+        buffer.destroy();
+        MemoryUtil.memFree(bytes);
     }
 }

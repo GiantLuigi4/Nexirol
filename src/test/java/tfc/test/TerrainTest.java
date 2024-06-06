@@ -50,11 +50,11 @@ public class TerrainTest {
             pass = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
             pass.colorAttachment(
                     Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.UNDEFINED, ImageLayout.PRESENT,
+                    ImageLayout.COLOR_ATTACHMENT_OPTIMAL, ImageLayout.PRESENT,
                     ReniSetup.selector
             ).depthAttachment(
                     Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                    ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     ReniSetup.DEPTH_FORMAT
             );
         }
@@ -327,6 +327,7 @@ public class TerrainTest {
         }
 
         pool.destroy();
+        quad.destroy();
         cube.destroy();
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
         shaders.destroy();
@@ -334,6 +335,7 @@ public class TerrainTest {
         pipeline1.destroy();
         pipeline0.destroy();
         pass.destroy();
+        ReniSetup.GRAPHICS_CONTEXT.depthBuffer().destroy();
         ReniSetup.GRAPHICS_CONTEXT.destroy();
         ReniSetup.WINDOW.dispose();
         GLFW.glfwTerminate();

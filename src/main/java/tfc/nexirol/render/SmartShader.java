@@ -77,6 +77,10 @@ public class SmartShader implements ReniDestructable {
     }
 
     public void destroy() {
+        if (constants != null)
+            constants.destroy();
+        pool.destroy();
+        layout.destroy();
     }
 
     public void prepare() {

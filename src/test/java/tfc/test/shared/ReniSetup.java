@@ -10,7 +10,7 @@ import tfc.renirol.frontend.hardware.device.feature.DynamicRendering;
 import tfc.renirol.frontend.hardware.device.support.image.ReniSwapchainCapabilities;
 import tfc.renirol.frontend.hardware.util.DeviceQuery;
 import tfc.renirol.frontend.hardware.util.ReniHardwareCapability;
-import tfc.renirol.frontend.rendering.framebuffer.SwapChain;
+import tfc.renirol.frontend.rendering.framebuffer.chain.SwapChain;
 import tfc.renirol.frontend.rendering.selectors.ChannelInfo;
 import tfc.renirol.frontend.rendering.selectors.FormatSelector;
 import tfc.renirol.frontend.windowing.GenericWindow;
@@ -26,7 +26,7 @@ public class ReniSetup {
 
     static {
         Setup.performanceSetup();
-        if (Scenario.useRenderDoc) Setup.loadRenderdoc();
+//        if (Scenario.useRenderDoc) Setup.loadRenderdoc();
         if (!Renirol.BACKEND.equals("OpenGL"))
             Setup.noAPI();
         WINDOW = Scenario.useWinNT ? new WinNTWindow(
