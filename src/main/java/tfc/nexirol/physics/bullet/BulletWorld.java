@@ -2,16 +2,18 @@ package tfc.nexirol.physics.bullet;
 
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.system.NativeLibraryLoader;
 import tfc.nexirol.physics.wrapper.PhysicsWorld;
 import tfc.nexirol.physics.wrapper.RigidBody;
+import tfc.nexirol.physics.wrapper.shape.Capsule;
 import tfc.nexirol.physics.wrapper.shape.Cube;
+import tfc.nexirol.physics.wrapper.shape.Sphere;
 import tfc.renirol.util.Pair;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class BulletWorld extends PhysicsWorld {
@@ -53,12 +55,24 @@ public class BulletWorld extends PhysicsWorld {
                 );
                 rigid = new PhysicsRigidBody(collisionShape, 1.0f);
             }
+            case SPHERE -> {
+                SphereCollisionShape collisionShape = new SphereCollisionShape(
+                        (float) (((Sphere) body.collider).radius / 2f)
+                );
+                rigid = new PhysicsRigidBody(collisionShape, 1.0f);
+            }
+            case CAPSULE -> {
+                CapsuleCollisionShape collisionShape = new CapsuleCollisionShape(
+                        (float) (((Capsule) body.collider).radius / 2f),
+                        (float) (((Capsule) body.collider).height)
+                );
+                rigid = new PhysicsRigidBody(collisionShape, 1.0f);
+            }
             default -> throw new RuntimeException("NYI");
         }
         rigid.setPhysicsLocation(new Vector3f(body.vec.x, body.vec.y, body.vec.z));
         rigid.setPhysicsRotation(new Quaternion(-body.quat.x, -body.quat.y, -body.quat.z, body.quat.w));
         if (body.isStatic) rigid.setMass(0.0f);
-//        rigid.setCcdMotionThreshold(1f);
         space.add(rigid);
         bodies.add(Pair.of(body, rigid));
     }

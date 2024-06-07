@@ -4,10 +4,15 @@ import physx.PxTopLevelFunctions;
 import physx.common.*;
 import physx.extensions.PxRigidBodyExt;
 import physx.geometry.PxBoxGeometry;
+import physx.geometry.PxCapsuleGeometry;
+import physx.geometry.PxGeometry;
+import physx.geometry.PxSphereGeometry;
 import physx.physics.*;
 import tfc.nexirol.physics.wrapper.PhysicsWorld;
 import tfc.nexirol.physics.wrapper.RigidBody;
+import tfc.nexirol.physics.wrapper.shape.Capsule;
 import tfc.nexirol.physics.wrapper.shape.Cube;
+import tfc.nexirol.physics.wrapper.shape.Sphere;
 import tfc.renirol.util.Pair;
 
 import java.util.ArrayList;
@@ -37,6 +42,7 @@ public class PhysXWorld extends PhysicsWorld {
         sceneDesc.setCpuDispatcher(PxTopLevelFunctions.DefaultCpuDispatcherCreate(11));
         sceneDesc.setFilterShader(PxTopLevelFunctions.DefaultFilterShader());
 
+        // TODO: cuda
 //        PxCudaContextManagerDesc desc = new PxCudaContextManagerDesc();
 //        PxCudaContextManager cudaMgr = PxCudaTopLevelFunctions.CreateCudaContextManager(foundation, desc);
 //
@@ -65,7 +71,6 @@ public class PhysXWorld extends PhysicsWorld {
 //        sceneDesc.setSolverBatchSize(sceneDesc.getSolverBatchSize() * 16);
 //        sceneDesc.setSolverArticulationBatchSize(sceneDesc.getSolverArticulationBatchSize() * 16);
 
-        // TODO: cuda
         sceneDesc.getGravity().setY(-9.81f);
 
         physics.createScene(sceneDesc);
@@ -99,7 +104,7 @@ public class PhysXWorld extends PhysicsWorld {
             actor = physics.createRigidDynamic(transform);
         }
         PxShape shape;
-        PxBoxGeometry geometry;
+        PxGeometry geometry;
         PxMaterial material;
 
         material = physics.createMaterial(
@@ -115,6 +120,12 @@ public class PhysXWorld extends PhysicsWorld {
                             (float) (((Cube) body.collider).height / 2f),
                             (float) (((Cube) body.collider).length / 2f)
                     );
+                    case SPHERE -> new PxSphereGeometry((float) ((Sphere) body.collider).radius);
+                    case CAPSULE -> new PxCapsuleGeometry(
+                            (float) ((Capsule) body.collider).radius,
+                            (float) ((Capsule) body.collider).height / 2f
+                    );
+                    case CONVEX -> throw new RuntimeException("NYI");
                 },
                 material,
                 true,
