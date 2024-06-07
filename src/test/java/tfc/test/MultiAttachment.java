@@ -21,9 +21,7 @@ import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
 import tfc.renirol.frontend.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
-import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
-import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.modes.CullMode;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
@@ -55,7 +53,8 @@ public class MultiAttachment {
         Image col;
         ReniSetup.GRAPHICS_CONTEXT.addBuffer(
                 col = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical())
-                        .setUsage(SwapchainUsage.COLOR)
+                        .setUsage(SwapchainUsage.COLOR),
+                false
         );
         col.create(
                 ReniSetup.WINDOW.getWidth(),
@@ -65,39 +64,14 @@ public class MultiAttachment {
 
         Shaders shaders = new Shaders();
 
-        final RenderPassInfo pass;
-        final RenderPassInfo pass1;
-        {
-            pass = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass.colorAttachment(
-                    Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.COLOR_ATTACHMENT_OPTIMAL, ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
-                    ReniSetup.selector
-            ).depthAttachment(
-                    Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                    ReniSetup.DEPTH_FORMAT
-            ).colorAttachment(
-                    Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.COLOR_ATTACHMENT_OPTIMAL, ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
-                    VK13.VK_FORMAT_R8G8B8A8_SRGB
-            );
-
-            pass1 = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass1.colorAttachment(
-                    Operation.PERFORM, Operation.PERFORM,
-                    ImageLayout.COLOR_ATTACHMENT_OPTIMAL, ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
-                    ReniSetup.selector
-            ).depthAttachment(
-                    Operation.PERFORM, Operation.PERFORM,
-                    ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                    ReniSetup.DEPTH_FORMAT
-            ).colorAttachment(
-                    Operation.PERFORM, Operation.PERFORM,
-                    ImageLayout.COLOR_ATTACHMENT_OPTIMAL, ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
-                    VK13.VK_FORMAT_R8G8B8A8_SRGB
-            );
-        }
+        final RenderPassInfo pass = ReniSetup.GRAPHICS_CONTEXT.getPass(
+                Operation.CLEAR, Operation.PERFORM,
+                ImageLayout.COLOR_ATTACHMENT_OPTIMAL
+        );
+        final RenderPassInfo pass1 = ReniSetup.GRAPHICS_CONTEXT.getPass(
+                Operation.PERFORM, Operation.PERFORM,
+                ImageLayout.COLOR_ATTACHMENT_OPTIMAL
+        );
 
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
         state.colorAttachmentCount(2);
@@ -199,9 +173,9 @@ public class MultiAttachment {
 //                            if (ReniSetup.NVIDIA) {
 //                                Shaders.cubeInstanceData.upload(cmd);
 //                            } else {
-                                cmd.endPass();
-                                Shaders.cubeInstanceData.upload(cmd);
-                                cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
+                            cmd.endPass();
+                            Shaders.cubeInstanceData.upload(cmd);
+                            cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
 //                            }
                         },
                         body
@@ -251,9 +225,9 @@ public class MultiAttachment {
 //                            if (ReniSetup.NVIDIA) {
 //                                Shaders.cubeInstanceData.upload(cmd);
 //                            } else {
-                                cmd.endPass();
-                                Shaders.cubeInstanceData.upload(cmd);
-                                cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
+                            cmd.endPass();
+                            Shaders.cubeInstanceData.upload(cmd);
+                            cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
 //                            }
                         },
                         body
@@ -289,7 +263,7 @@ public class MultiAttachment {
 
                 }
             });
-            ((GLFWWindow) ReniSetup.WINDOW).captureMouse();
+            ReniSetup.WINDOW.captureMouse();
 
             Vector3f cameraPos = new Vector3f();
             Quaternionf cameraRotation = new Quaternionf(0, 0, 0, 1);
@@ -408,34 +382,7 @@ public class MultiAttachment {
 
                 buffer.begin();
 
-                buffer.transition(
-                        ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
-                        StageMask.TOP_OF_PIPE,
-                        StageMask.COLOR_ATTACHMENT_OUTPUT,
-                        ImageLayout.UNDEFINED,
-                        ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
-                        AccessMask.NONE,
-                        AccessMask.COLOR_WRITE
-                );
-                buffer.transition(
-                        ReniSetup.GRAPHICS_CONTEXT.depthBuffer().getHandle(),
-                        StageMask.TOP_OF_PIPE,
-                        StageMask.FRAGMENT_TEST,
-                        ImageLayout.UNDEFINED,
-                        ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                        AccessMask.NONE,
-                        AccessMask.DEPTH_WRITE,
-                        SwapchainUsage.DEPTH
-                );
-                buffer.transition(
-                        col.getHandle(),
-                        StageMask.TOP_OF_PIPE,
-                        StageMask.COLOR_ATTACHMENT_OUTPUT,
-                        ImageLayout.UNDEFINED,
-                        ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
-                        AccessMask.NONE,
-                        AccessMask.COLOR_WRITE
-                );
+                ReniSetup.GRAPHICS_CONTEXT.prepareChain(buffer);
 
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
                 buffer.beginPass(pass, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents());
@@ -473,15 +420,7 @@ public class MultiAttachment {
                 buffer.endPass();
                 buffer.endLabel();
 
-                buffer.transition(
-                        ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
-                        StageMask.COLOR_ATTACHMENT_OUTPUT,
-                        StageMask.BOTTOM_OF_PIPE,
-                        ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
-                        ImageLayout.PRESENT,
-                        AccessMask.COLOR_WRITE,
-                        AccessMask.NONE
-                );
+                ReniSetup.GRAPHICS_CONTEXT.preparePresent(buffer);
 
                 buffer.end();
 
@@ -501,6 +440,8 @@ public class MultiAttachment {
             err.printStackTrace();
         }
 
+        col.destroy();
+        ReniSetup.GRAPHICS_CONTEXT.depthBuffer().destroy();
         pool.destroy();
         cube.destroy();
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();

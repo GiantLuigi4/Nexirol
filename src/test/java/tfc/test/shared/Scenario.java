@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Scenario {
     public static final ArrayList<DeviceFeature> FEATURES = new ArrayList<>();
-    public static boolean useWinNT = true;
+    public static boolean useWinNT = false;
     public static boolean useRenderDoc = true;
     public static boolean useDepth = true;
 

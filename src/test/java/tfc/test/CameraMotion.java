@@ -46,7 +46,7 @@ import java.nio.FloatBuffer;
 
 public class CameraMotion {
     public static void main(String[] args) {
-        System.setProperty("joml.nounsafe", "true");
+//        System.setProperty("joml.nounsafe", "true");
         Scenario.useWinNT = false;
 //        Scenario.useRenderDoc = false;
         ReniSetup.initialize();

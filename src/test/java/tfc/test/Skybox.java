@@ -73,7 +73,7 @@ public class Skybox {
     );
 
     public static void main(String[] args) {
-        System.setProperty("joml.nounsafe", "true");
+//        System.setProperty("joml.nounsafe", "true");
         ReniSetup.initialize();
         matrices.setup(ReniSetup.GRAPHICS_CONTEXT);
         skyData.setup(ReniSetup.GRAPHICS_CONTEXT);

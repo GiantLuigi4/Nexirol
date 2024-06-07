@@ -45,19 +45,10 @@ public class TerrainTest {
 
         Shaders shaders = new Shaders();
 
-        final RenderPassInfo pass;
-        {
-            pass = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass.colorAttachment(
-                    Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.COLOR_ATTACHMENT_OPTIMAL, ImageLayout.PRESENT,
-                    ReniSetup.selector
-            ).depthAttachment(
-                    Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                    ReniSetup.DEPTH_FORMAT
-            );
-        }
+        final RenderPassInfo pass = ReniSetup.GRAPHICS_CONTEXT.getPass(
+                Operation.CLEAR, Operation.PERFORM,
+                ImageLayout.PRESENT
+        );
 
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT, DynamicStateMasks.CULL_MODE);

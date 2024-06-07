@@ -30,7 +30,7 @@ import tfc.test.shared.Shaders;
 
 public class Cube {
     public static void main(String[] args) {
-        System.setProperty("joml.nounsafe", "true");
+//        System.setProperty("joml.nounsafe", "true");
         ReniSetup.initialize();
 
         Shaders shaders = new Shaders();
