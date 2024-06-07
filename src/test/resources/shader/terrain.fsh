@@ -23,6 +23,9 @@ layout(binding = 0) uniform Matrices {
 #include <shader/util/noise/hash.glsl>
 #include <shader/util/noise/simple.glsl>
 
+const vec4 grassGreen = vec4(128. / 255., 154. / 255., 128. / 255., 255. / 255.);
+const vec4 stoneGray = vec4(128. / 255., 128. / 255., 130. / 255., 255. / 255.);
+
 void main() {
     normalOut = vec4(normal, 1.0);
 
@@ -33,8 +36,15 @@ void main() {
     float dAdd = 0.;
 
     float nz = simpleNoise(wsCoord.xz, 1);
-    colorOut = vec4((1-nz)/8, nz / 2 + 0.5, nz / 8, 1);
-    vec4 grassGreen = vec4(128. / 255., 154. / 255., 128. / 255., 255. / 255.);
-    colorOut *= grassGreen;
+    vec4 color;
+    if (sin(normal.y) > 0.5) {
+        colorOut = vec4((1-nz)/8, nz / 2 + 0.5, nz / 8, 1);
+        color = grassGreen;
+    } else {
+        colorOut = vec4(nz.xxx, 1);
+        color = stoneGray;
+    }
+
+    colorOut *= color;
     colorOut = colorOut * vec4(vec3(amt) * vec3(1-(dAdd / 1000.)), 1.);
 }

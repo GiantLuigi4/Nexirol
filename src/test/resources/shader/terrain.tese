@@ -129,7 +129,7 @@ void main() {
         o_0n1.xyz,
         on1_0.xyz
     )) * 0.5;
-    norm.y = abs(norm.y);
+    norm *= sign(norm.y);
 
     wsCoordOut = p.xyz;
     wsCoordOut.xz -= oGin.xz;
