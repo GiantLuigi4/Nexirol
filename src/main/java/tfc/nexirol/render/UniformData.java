@@ -8,6 +8,8 @@ import tfc.renirol.frontend.enums.BufferUsage;
 import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.flags.AdvanceRate;
 import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
+import tfc.renirol.frontend.enums.masks.AccessMask;
+import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
@@ -19,6 +21,7 @@ import tfc.renirol.itf.ReniDestructable;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 // TODO: move to reni
@@ -114,9 +117,13 @@ public class UniformData implements ReniDestructable {
     }
 
     public void setup(ReniContext context) {
+        setup(context, false);
+    }
+
+    public void setup(ReniContext context, boolean transfer) {
         if (info != null || descriptor != null) {
-            BufferUsage usage = BufferUsage.UNIFORM;
-            if (descriptor != null) usage = BufferUsage.VERTEX;
+            BufferUsage usage = transfer ? BufferUsage.UNIFORM_TRANSFER : BufferUsage.UNIFORM;
+            if (descriptor != null) usage = transfer ? BufferUsage.VERTEX_TRANSFER : BufferUsage.VERTEX;
 
             buffer = new GPUBuffer(
                     context.getLogical(),
@@ -182,7 +189,7 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
-    public void set(int index, float x, float y, float z, float w) {
+    public void setF(int index, float x, float y, float z, float w) {
         IndexedElement indexed = indexedElements[index];
         if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
@@ -196,7 +203,7 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
-    public void set(int index, float x, float y, float z) {
+    public void setF(int index, float x, float y, float z) {
         IndexedElement indexed = indexedElements[index];
         if (indexed.element.size != 3 || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
@@ -209,7 +216,31 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
-    public void set(int index, Matrix4f matrix4f) {
+    public void setF(int index, float x, float y) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 2 || indexed.element.type != NumericPrimitive.FLOAT)
+            throw new RuntimeException("Invalid element type.");
+        FloatBuffer fb = bytes.position(indexed.memoryOffset).asFloatBuffer();
+        fb.put(0, x);
+        fb.put(1, y);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (2 * 4));
+        bytes.position(0);
+    }
+
+    public void setI(int index, int x, int y) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 2 || indexed.element.type != NumericPrimitive.INT)
+            throw new RuntimeException("Invalid element type.");
+        IntBuffer fb = bytes.position(indexed.memoryOffset).asIntBuffer();
+        fb.put(0, x);
+        fb.put(1, y);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (2 * 4));
+        bytes.position(0);
+    }
+
+    public void setF(int index, Matrix4f matrix4f) {
         IndexedElement indexed = indexedElements[index];
         if (indexed.element.size != (4 * 4) || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
@@ -219,7 +250,7 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
-    public void set(int index, Quaternionf quat) {
+    public void setF(int index, Quaternionf quat) {
         IndexedElement indexed = indexedElements[index];
         if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
@@ -233,7 +264,7 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
-    public void set(int index, float f) {
+    public void setF(int index, float f) {
         IndexedElement indexed = indexedElements[index];
         if (indexed.element.size != 1 || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
@@ -253,15 +284,27 @@ public class UniformData implements ReniDestructable {
     }
 
     public void upload(CommandBuffer buffer) {
-        if (buffer != null) {
+        if (this.buffer != null) {
             bytes.position(0).limit(ulEnd);
+
             // TODO: should use a submit queue and copy from a temporary submission buffer to the main buffer or smth
+            buffer.bufferBarrier(
+                    this.buffer,
+                    StageMask.GRAPHICS, StageMask.TRANSFER,
+                    AccessMask.VERTEX_READ, AccessMask.TRANSFER_WRITE
+            );
             buffer.bufferData(
                     this.buffer, ulStart,
                     (ulEnd - ulStart), bytes
             );
+            buffer.bufferBarrier(
+                    this.buffer,
+                    StageMask.TRANSFER, StageMask.GRAPHICS,
+                    AccessMask.TRANSFER_WRITE, AccessMask.VERTEX_READ
+            );
             ulStart = Integer.MAX_VALUE;
             ulEnd = 0;
+            bytes.position(0).limit(bytes.capacity());
         }
     }
 

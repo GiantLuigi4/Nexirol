@@ -52,7 +52,7 @@ public class CubePrimitive implements Instanceable, Drawable, InstanceKey {
         this.height = height;
         this.length = length;
 
-        vbo = new GPUBuffer(device, BufferUsage.VERTEX, format.stride * (4 * 6) * 4);
+        vbo = new GPUBuffer(device, BufferUsage.VERTEX, format.stride * (4 * 6));
         ibo = new GPUBuffer(device, BufferUsage.INDEX, (6 * 6) * 2);
 
         vbo.allocate();

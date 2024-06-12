@@ -1,0 +1,94 @@
+#version 450
+#extension GL_EXT_shader_explicit_arithmetic_types: enable
+
+// ==== heightmap shader ====
+
+// noise
+#include <shader/util/noise/hash.glsl>
+#include <shader/util/noise/simple.glsl>
+#include <shader/util/math/bitwise/rotations.glsl>
+#include <shader/util/math/bitwise/u_shir.glsl>
+#include <shader/util/math/doubles.glsl>
+#include <shader/util/noise/rand.glsl>
+#include <shader/util/noise/xoroshiro.glsl>
+#include <shader/util/noise/perlin_xoro.glsl>
+
+// High Precision mode
+// represents height values as 3 8 bit floats, representing the 24 bit integer representation of the float
+//#define HIGHP
+
+// MODE_ALPHA is currently incompatible with HIGHP
+// if MODE_ALPHA is defined, ENTRY must return a vec2
+//#define MODE_ALPHA
+
+#ifdef NOISE
+
+struct nexi_PerPixel {
+    // pixel coords of the terrain being generated/merged
+    ivec2 terrainUV;
+} nexi_In;
+
+layout (binding = 1) uniform NoiseData {
+    // terrain range, prescaled to 0->1
+    float mapMin;
+    float mapMax;
+
+    // UNUSED
+    // height range of texture
+    float texMin;
+    float texMax;
+};
+
+float heightmap(vec2 pos) {
+//    pos *= 100;
+
+    vec2 fp = floor(pos);
+    if (fp.x == 0 || fp.y == 0) pos += 0.00001;
+
+    float nz = perlinNoise(pos / 10000., 8, vec2(23408, 23472));
+    float nz1 = perlinNoise(pos / 20000., 4, vec2(3927423, 7982432));
+    nz += nz1 * 2;
+    float v = nz / 3.;
+    v = mix(mapMin, mapMax, nz);
+    return v;
+}
+
+float calculateNoise() {
+    return heightmap(vec2(float(nexi_In.terrainUV.x), float(nexi_In.terrainUV.y)));
+}
+
+#define ENTRY calculateNoise
+
+#else
+
+struct nexi_PerFragment {
+    // pixel coords of the terrain being generated/merged
+    ivec2 terrainUV;
+     vec2     texUV;
+} nexi_In;
+
+layout (binding = 1) uniform MergeTexture {
+    uniform sampler2D merging;
+};
+
+layout (binding = 1) uniform MergeData {
+    // height range of terrain
+    float mapMin;
+    float mapMax;
+
+    // height range of texture
+    float texMin;
+    float texMax;
+};
+
+float blitTexture() {
+    float value = texture2D(merging, nexi_In.texUV).r;
+    value = mix(texMin, texMax, value);
+    value = (value - mapMin) / (mapMax - mapMin);
+
+    return value;
+}
+
+#define ENTRY blitTexture
+
+#endif

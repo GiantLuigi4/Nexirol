@@ -35,7 +35,7 @@ void main() {
 //    float dAdd = distance(wsCoord.xyz, constantVec);
     float dAdd = 0.;
 
-    float nz = simpleNoise(wsCoord.xz, 1);
+    float nz = simpleNoise(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128), 1);
     vec4 color;
     if (sin(normal.y) > 0.5) {
         colorOut = vec4((1-nz)/8, nz / 2 + 0.5, nz / 8, 1);

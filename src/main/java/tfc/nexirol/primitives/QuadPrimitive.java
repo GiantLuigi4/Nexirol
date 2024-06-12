@@ -6,6 +6,7 @@ import tfc.renirol.frontend.enums.IndexSize;
 import tfc.renirol.frontend.hardware.device.ReniLogicalDevice;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
+import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
 import tfc.renirol.frontend.reni.draw.batch.Drawable;
@@ -26,27 +27,54 @@ public class QuadPrimitive implements Instanceable, Drawable, InstanceKey {
     final int primCount;
 
     public int putVec3(
+            DataFormat format,
             FloatBuffer buffer, int start,
             float x, float y, float z,
             float nx, float ny, float nz
     ) {
-        buffer.put(start, x);
-        buffer.put(start + 1, y);
-        buffer.put(start + 2, z);
-        buffer.put(start + 3, 1);
+        int count = 0;
+        for (DataElement element : format.elements) {
+            count++;
+            if (count > 2)
+                throw new RuntimeException("Unsupported format");
+        }
 
-        buffer.put(start + 4, nx);
-        buffer.put(start + 5, ny);
-        buffer.put(start + 6, nz);
+        int stride = format.elements.value.size;
 
-        return start + 7;
+        if (format.elements.value.size > 4)
+            throw new RuntimeException("Unsupported format");
+
+        if (format.elements.value.size >= 2) {
+            buffer.put(start, x);
+            buffer.put(start + 1, stride == 2 ? z : y);
+            if (format.elements.value.size >= 3) {
+                buffer.put(start + 2, z);
+
+                if (format.elements.value.size == 4)
+                    buffer.put(start + 3, 1);
+            }
+        } else throw new RuntimeException("Unsupported format");
+
+        if (count == 2) {
+            stride += 3;
+            if (format.elements.getNext().value.size == 3) {
+                buffer.put(start + 4, nx);
+                buffer.put(start + 5, ny);
+                buffer.put(start + 6, nz);
+            } else {
+                throw new RuntimeException("Unsupported format");
+            }
+        }
+
+        return start + stride;
     }
 
     /**
-     * @param format must be suitable for POSITION, NORMAL
+     * @param format must be suitable for POSITION4, NORMAL3
+     *               must be suitable for at least POSITION2
      * @param width  the width of the box
      * @param height the height of the box
-     * @param tris whether the mesh should be generated as triangles or quads
+     * @param tris   whether the mesh should be generated as triangles or quads
      */
     public QuadPrimitive(ReniLogicalDevice device, DataFormat format, float width, float height, boolean tris) {
         this.width = width;
@@ -54,7 +82,7 @@ public class QuadPrimitive implements Instanceable, Drawable, InstanceKey {
         this.tris = tris;
         primCount = tris ? 6 : 4;
 
-        vbo = new GPUBuffer(device, BufferUsage.VERTEX, format.stride * 4 * 4);
+        vbo = new GPUBuffer(device, BufferUsage.VERTEX, format.stride * 4);
         ibo = new GPUBuffer(device, BufferUsage.INDEX, primCount * 2);
 
         vbo.allocate();
@@ -68,21 +96,25 @@ public class QuadPrimitive implements Instanceable, Drawable, InstanceKey {
             // top/bottom
             {
                 index = putVec3(
+                        format,
                         fb, index,
                         -width / 2, 0, height / 2,
                         0, 1, 0
                 );
                 index = putVec3(
+                        format,
                         fb, index,
                         -width / 2, 0, -height / 2,
                         0, 1, 0
                 );
                 index = putVec3(
+                        format,
                         fb, index,
                         width / 2, 0, -height / 2,
                         0, 1, 0
                 );
                 index = putVec3(
+                        format,
                         fb, index,
                         width / 2, 0, height / 2,
                         0, 1, 0

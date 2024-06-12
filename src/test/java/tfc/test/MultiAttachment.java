@@ -333,7 +333,7 @@ public class MultiAttachment {
                 {
                     UniformData matrices = Shaders.matrices;
 
-                    matrices.set(0, Matrices.projection(
+                    matrices.setF(0, Matrices.projection(
                             (float) Math.toRadians(45),
                             ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(),
                             0.1f, 10000.0f
@@ -347,7 +347,7 @@ public class MultiAttachment {
                     model.rotate(cameraRotation);
 
                     model.mul(view);
-                    matrices.set(1, model);
+                    matrices.setF(1, model);
                     matrices.upload();
                 }
                 // setup sky
@@ -361,16 +361,16 @@ public class MultiAttachment {
                     skyData.setColor(3, 81, 133, 201, 0);
 
                     // sun
-                    skyData.set(4, new Quaternionf().setAngleAxis(
+                    skyData.setF(4, new Quaternionf().setAngleAxis(
                             -Math.toRadians(frame / 10f), 1, 0, 0
                     ));
-                    skyData.set(5, 1 / 32f);
+                    skyData.setF(5, 1 / 32f);
                     skyData.setColor(6, 254, 247, 217, 255);
 
                     // scatter
-                    skyData.set(7, 0);
-                    skyData.set(8, 168 / 255f, 113 / 255f, 50 / 255f, 1);
-                    skyData.set(9, 0, 0, 0);
+                    skyData.setF(7, 0);
+                    skyData.setF(8, 168 / 255f, 113 / 255f, 50 / 255f, 1);
+                    skyData.setF(9, 0, 0, 0);
 
                     // TODO: stars
 

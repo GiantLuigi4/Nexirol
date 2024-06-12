@@ -1,83 +1,106 @@
-package tfc.test;
+package tfc.test.noise;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.vulkan.VK13;
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.nexirol.math.Matrices;
-import tfc.nexirol.physics.physx.PhysXWorld;
-import tfc.nexirol.physics.wrapper.Material;
-import tfc.nexirol.physics.wrapper.PhysicsDrawable;
-import tfc.nexirol.physics.wrapper.PhysicsWorld;
-import tfc.nexirol.physics.wrapper.RigidBody;
-import tfc.nexirol.physics.wrapper.shape.Cube;
 import tfc.nexirol.primitives.CubePrimitive;
+import tfc.nexirol.primitives.QuadPrimitive;
+import tfc.nexirol.render.DataLayout;
 import tfc.nexirol.render.UniformData;
 import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
+import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
 import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
 import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.modes.CullMode;
+import tfc.renirol.frontend.enums.modes.PrimitiveType;
+import tfc.renirol.frontend.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
+import tfc.renirol.frontend.rendering.framebuffer.Attachment;
+import tfc.renirol.frontend.rendering.framebuffer.Framebuffer;
 import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
+import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
-import tfc.renirol.frontend.reni.draw.instance.InstanceCollection;
+import tfc.renirol.frontend.rendering.resource.image.Image;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.renirol.frontend.windowing.listener.KeyboardListener;
+import tfc.renirol.util.ShaderCompiler;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
 import tfc.test.shared.ReniSetup;
 import tfc.test.shared.Scenario;
 import tfc.test.shared.Shaders;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-
-public class CameraMotion {
+public class HMTest {
     public static void main(String[] args) {
 //        System.setProperty("joml.nounsafe", "true");
         Scenario.useWinNT = false;
 //        Scenario.useRenderDoc = false;
         ReniSetup.initialize();
 
+
+        ShaderCompiler compiler = new ShaderCompiler();
+        compiler.setupGlsl();
+        compiler.debug();
+
+
+        boolean firstFrame = false;
+        // === Heightmap Size ===
+        VkExtent2D hmSize = VkExtent2D.calloc();
+        hmSize.set(4096 * 2, 4096 * 2);
+        // === Setup Heightmap FBO ===
+        Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
+        img.setUsage(SwapchainUsage.COLOR);
+        img.create(hmSize.width(), hmSize.height(), VK13.VK_FORMAT_R16_UNORM);
+        Attachment attachment = new Attachment(img, false, false);
+        Framebuffer fbo = new Framebuffer(attachment);
+        RenderPassInfo heightmapPass = fbo.genericPass(ReniSetup.GRAPHICS_CONTEXT.getLogical(), Operation.PERFORM, Operation.PERFORM);
+        // === Setup Heightmap Uniform Data ===
+        DataElement MAP = new DataElement(NumericPrimitive.FLOAT, 2);
+        DataElement TEX = new DataElement(NumericPrimitive.FLOAT, 2);
+        DataFormat hmDataFormat = new DataFormat(MAP, TEX);
+        UniformData hmData = new UniformData(
+                false,
+                DataLayout.STANDARD,
+                hmDataFormat,
+                new ShaderStageFlags[]{ShaderStageFlags.FRAGMENT},
+                1
+        );
+        hmData.setup(ReniSetup.GRAPHICS_CONTEXT);
+        // === Create Shader ===
+        HeightmapShader shader = new HeightmapShader(
+                heightmapPass,
+                ReniSetup.GRAPHICS_CONTEXT,
+                Shaders.processor,
+                compiler,
+                Shaders.read(Shaders.class.getClassLoader().getResourceAsStream("shader/heightmap.hsh")),
+                "heightmap.hsh",
+                hmData
+        );
+
+
+
+
         Shaders shaders = new Shaders();
 
-        final RenderPassInfo pass;
-        final RenderPassInfo pass1;
-        {
-            pass = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass.colorAttachment(
-                    Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.UNDEFINED, ImageLayout.PRESENT,
-                    ReniSetup.selector
-            ).depthAttachment(
-                    Operation.CLEAR, Operation.PERFORM,
-                    ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                    ReniSetup.DEPTH_FORMAT
-            );
-
-            pass1 = new RenderPassInfo(ReniSetup.GRAPHICS_CONTEXT.getLogical(), ReniSetup.GRAPHICS_CONTEXT.getSurface());
-            pass1.colorAttachment(
-                    Operation.PERFORM, Operation.PERFORM,
-                    ImageLayout.UNDEFINED, ImageLayout.PRESENT,
-                    ReniSetup.selector
-            ).depthAttachment(
-                    Operation.PERFORM, Operation.PERFORM,
-                    ImageLayout.UNDEFINED, ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                    ReniSetup.DEPTH_FORMAT
-            );
-        }
+        final RenderPassInfo pass = ReniSetup.GRAPHICS_CONTEXT.getPass(
+                Operation.CLEAR, Operation.PERFORM,
+                ImageLayout.PRESENT
+        );
 
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT, DynamicStateMasks.CULL_MODE);
@@ -101,14 +124,19 @@ public class CameraMotion {
         shaders.SKY.bind(state, desc0);
         state.depthTest(false).depthMask(false);
         GraphicsPipeline pipeline0 = new GraphicsPipeline(pass, state, shaders.SKY.shaders);
-        shaders.CUBE.prepare();
-        shaders.CUBE.bind(state, desc0);
+        shaders.TERRAIN.prepare();
+        shaders.TERRAIN.bind(state, desc0);
         state.depthTest(true).depthMask(true);
-        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.CUBE.shaders);
+        state.patchControlPoints(4).setTopology(PrimitiveType.PATCH);
+        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.TERRAIN.shaders);
 
         CubePrimitive cube = new CubePrimitive(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 format, 1, 1, 1
+        );
+        QuadPrimitive quad = new QuadPrimitive(
+                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                format, 1, 1, false
         );
 
         try {
@@ -123,121 +151,7 @@ public class CameraMotion {
             buffer.clearColor(0, 0, 0, 1);
             buffer.clearDepth(1f);
 
-//            PhysicsWorld world = new BulletWorld();
-//            PhysicsWorld world = new BulletWorld();
-            PhysicsWorld world = new PhysXWorld();
-
-            final int MAX_INSTANCES = 64_000;
-            final int SHADER_MAX_INSTANCES = 5_000;
-            InstanceCollection collection = new InstanceCollection(
-                    (collection1) -> {
-                        collection1.maxInstances = SHADER_MAX_INSTANCES;
-                        collection1.pipeline = pipeline1;
-                    }
-            );
-
             VkExtent2D[] extent2D = new VkExtent2D[1];
-
-            // ground
-            {
-                float r = (float) Math.random();
-                float g = (float) Math.random();
-                float b = (float) Math.random();
-                RigidBody body;
-                world.addBody(body = new RigidBody(
-                        true, new Cube(1000, 20, 1000),
-                        new Material(0.5f, 0.5f, 0.0f)
-                ).setPosition(
-                        0, -40, 0
-                ));
-                collection.add(buffer, new PhysicsDrawable(
-                        cube,
-                        (cmd, idx) -> {
-                            ByteBuffer cubeBuf = Shaders.cubeInstanceData.get(idx);
-                            FloatBuffer fb = cubeBuf.asFloatBuffer();
-                            // position
-                            fb.put(0, body.vec.x);
-                            fb.put(1, body.vec.y);
-                            fb.put(2, body.vec.z);
-                            // orientation
-                            fb.put(3, body.quat.x);
-                            fb.put(4, body.quat.y);
-                            fb.put(5, body.quat.z);
-                            fb.put(6, body.quat.w);
-                            // scale
-                            fb.put(7, 1000);
-                            fb.put(8, 20);
-                            fb.put(9, 1000);
-                            // color
-                            fb.put(10, r);
-                            fb.put(11, g);
-                            fb.put(12, b);
-                            fb.put(13, 1);
-                        },
-                        (cmd) -> {
-                            if (ReniSetup.NVIDIA) {
-                                Shaders.cubeInstanceData.upload(cmd);
-                            } else {
-                                cmd.endPass();
-                                Shaders.cubeInstanceData.upload(cmd);
-                                cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
-                            }
-                        },
-                        body
-                ));
-            }
-            // physics objects
-            for (int i = 0; i < (MAX_INSTANCES - 1); i++) {
-                float size = (float) (Math.random() * 2 + 1);
-                float r = (float) Math.random();
-                float g = (float) Math.random();
-                float b = (float) Math.random();
-                RigidBody body;
-                world.addBody(body = new RigidBody(
-                        false, new Cube(size, size, size),
-                        new Material(0.5f, 0.5f, 0.0f)
-                ).setPosition(
-                        (float) (Math.random() * 25f - (25f / 2)),
-                        (float) (Math.random() * 25f - (25f / 2)) + i / 10f,
-                        (float) (Math.random() * 25f - (25f / 2))
-                ));
-
-                collection.add(buffer, new PhysicsDrawable(
-                        cube,
-                        (cmd, idx) -> {
-                            ByteBuffer cubeBuf = Shaders.cubeInstanceData.get(idx);
-                            FloatBuffer fb = cubeBuf.asFloatBuffer();
-                            // position
-                            fb.put(0, body.vec.x);
-                            fb.put(1, body.vec.y);
-                            fb.put(2, body.vec.z);
-                            // orientation
-                            fb.put(3, body.quat.x);
-                            fb.put(4, body.quat.y);
-                            fb.put(5, body.quat.z);
-                            fb.put(6, body.quat.w);
-                            // scale
-                            fb.put(7, size);
-                            fb.put(8, size);
-                            fb.put(9, size);
-                            // color
-                            fb.put(10, r);
-                            fb.put(11, g);
-                            fb.put(12, b);
-                            fb.put(13, 1);
-                        },
-                        (cmd) -> {
-                            if (ReniSetup.NVIDIA) {
-                                Shaders.cubeInstanceData.upload(cmd);
-                            } else {
-                                cmd.endPass();
-                                Shaders.cubeInstanceData.upload(cmd);
-                                cmd.beginPass(pass1, ReniSetup.GRAPHICS_CONTEXT.getChainBuffer(), extent2D[0]);
-                            }
-                        },
-                        body
-                ));
-            }
 
             boolean[] inputStates = new boolean[6];
 
@@ -289,26 +203,38 @@ public class CameraMotion {
                 q.rotateLocalX((float) rV[1] / 200f);
                 cameraRotation.set(q);
                 cameraRotation.normalize();
-
-//                Quaternionf q = new Quaternionf(0, 0, 0, 1);
-//                Quaternionf q1 = new Quaternionf(0, 0, 0, 1);
-//                q.rotateLocalY((float) (x / 200f));
-//                q1.rotateLocalX((float) (y / 200f));
-//                cameraRotation.conjugate();
-//                cameraRotation.mul(q1);
-//                cameraRotation.normalize();
-//                cameraRotation.conjugate();
-//                cameraRotation.mul(q);
-//                cameraRotation.normalize();
             });
 
-            Thread td = new Thread(() -> {
-                while (true) {
-                    world.tick();
-                }
-            });
-            td.setDaemon(true);
-            td.start();
+            {
+                CommandBuffer cmd = CommandBuffer.create(
+                        ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                        ReniQueueType.GRAPHICS, true,
+                        false, true
+                );
+                cmd.begin();
+
+                // === Compute Heightmap ===
+                hmData.setF(0, 0, 1);
+                hmData.setF(1, 0, 1);
+                hmData.upload(cmd);
+
+                shader.beginCompute(cmd, fbo, hmSize);
+                shader.computeNoise(
+                        cmd,
+                        0, 0,
+                        0, 0,
+                        hmSize.width(), hmSize.height()
+                );
+                shader.finishCompute(cmd);
+
+                cmd.end();
+                cmd.submit(
+                        ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS),
+                        StageMask.GRAPHICS
+                );
+                ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS).await();
+                cmd.destroy();
+            }
 
             while (!ReniSetup.WINDOW.shouldClose()) {
                 frame++;
@@ -429,7 +355,7 @@ public class CameraMotion {
                     buffer.startLabel("Scene", 0, 0, 0.5f, 0.5f);
 
                     buffer.bindPipe(pipeline1);
-                    shaders.CUBE.bindCommand(pipeline1, buffer);
+                    shaders.TERRAIN.bindCommand(pipeline1, buffer);
                     buffer.cullMode(CullMode.BACK);
                     buffer.viewportScissor(
                             0, 0,
@@ -437,7 +363,8 @@ public class CameraMotion {
                             ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents().height(),
                             0f, 1f
                     );
-                    collection.draw(buffer, pipeline1);
+                    quad.bind(buffer);
+                    quad.draw(buffer, pipeline1, 11 * 11);
                     buffer.endLabel();
                 }
                 buffer.endPass();
@@ -453,6 +380,27 @@ public class CameraMotion {
                         AccessMask.NONE
                 );
 
+                {
+                    hmData.setF(0, 0, 1);
+                    hmData.setF(1, 0, 1);
+                    hmData.upload(buffer);
+
+                    shader.beginCompute(buffer, fbo, hmSize);
+                    shader.computeNoise(
+                            buffer,
+                            0, 0,
+                            0, hmSize.height() - 16,
+                            hmSize.width() - 16, 16
+                    );
+                    shader.computeNoise(
+                            buffer,
+                            0, 0,
+                            hmSize.width() - 16, 0,
+                            16, hmSize.height()
+                    );
+                    shader.finishCompute(buffer);
+                }
+
                 buffer.end();
 
                 ReniSetup.GRAPHICS_CONTEXT.submitFrame(buffer);
@@ -462,6 +410,11 @@ public class CameraMotion {
                 GLFWWindow.poll();
 
                 ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+
+//                try {
+//                    Thread.sleep(8);
+//                } catch (Throwable err) {
+//                }
             }
             buffer.destroy();
         } catch (Throwable err) {
@@ -469,6 +422,7 @@ public class CameraMotion {
         }
 
         pool.destroy();
+        quad.destroy();
         cube.destroy();
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
         shaders.destroy();
@@ -476,6 +430,7 @@ public class CameraMotion {
         pipeline1.destroy();
         pipeline0.destroy();
         pass.destroy();
+        ReniSetup.GRAPHICS_CONTEXT.depthBuffer().destroy();
         ReniSetup.GRAPHICS_CONTEXT.destroy();
         ReniSetup.WINDOW.dispose();
         GLFW.glfwTerminate();

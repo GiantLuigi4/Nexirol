@@ -140,23 +140,23 @@ public class Cube {
 
             for (int i = 0; i < 100; i++) {
                 // position
-                Shaders.cubeInstanceData.set(
+                Shaders.cubeInstanceData.setF(
                         i,
                         (float) Math.random() * 100 - 50,
                         (float) Math.random() * 100 - 50,
                         (float) Math.random() * 100 - 50
                 );
                 // orientation
-                Shaders.cubeInstanceData.set(
+                Shaders.cubeInstanceData.setF(
                         i + 100, 0, 0, 0, 1
                 );
                 // scale
-                Shaders.cubeInstanceData.set(
+                Shaders.cubeInstanceData.setF(
                         i + 200,
                         1, 1, 1
                 );
                 // color
-                Shaders.cubeInstanceData.set(
+                Shaders.cubeInstanceData.setF(
                         i + 300, (float) Math.random(), (float) Math.random(), (float) Math.random(), 1
                 );
             }
@@ -179,7 +179,7 @@ public class Cube {
                 {
                     UniformData matrices = Shaders.matrices;
 
-                    matrices.set(0, Matrices.projection((float) Math.toRadians(45), ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(), 0.01f, 100.0f));
+                    matrices.setF(0, Matrices.projection((float) Math.toRadians(45), ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(), 0.01f, 100.0f));
 
                     Matrix4f view = new Matrix4f();
                     float x = (float) Math.cos(Math.toRadians(frame / 10.));
@@ -195,7 +195,7 @@ public class Cube {
 //                    model.translate(0, 0, -50);
 
                     model.mul(view);
-                    matrices.set(1, model);
+                    matrices.setF(1, model);
                     matrices.upload();
                 }
                 // setup sky
@@ -209,16 +209,16 @@ public class Cube {
                     skyData.setColor(3, 81, 133, 201, 0);
 
                     // sun
-                    skyData.set(4, new Quaternionf().setAngleAxis(
+                    skyData.setF(4, new Quaternionf().setAngleAxis(
                             Math.toRadians(frame / 10f), 1, 0, 0
                     ));
-                    skyData.set(5, 1 / 32f);
-                    skyData.set(6, 1, 1, 1, 1f);
+                    skyData.setF(5, 1 / 32f);
+                    skyData.setF(6, 1, 1, 1, 1f);
 
                     // scatter
-                    skyData.set(7, 0);
-                    skyData.set(8, 168 / 255f, 113 / 255f, 50 / 255f, 1);
-                    skyData.set(9, 0, 0, 0);
+                    skyData.setF(7, 0);
+                    skyData.setF(8, 168 / 255f, 113 / 255f, 50 / 255f, 1);
+                    skyData.setF(9, 0, 0, 0);
 
                     // TODO: stars
 

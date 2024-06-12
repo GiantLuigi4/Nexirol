@@ -1,8 +1,11 @@
-package tfc.nexirol.render.glsl;
+package tfc.nexirol.render.glsl.util;
+
+import tfc.nexirol.render.glsl.Line;
+import tfc.nexirol.render.glsl.PreProcessor;
 
 import java.util.List;
 
-public class SequenceProcessor extends PreProcessor{
+public class SequenceProcessor extends PreProcessor {
     PreProcessor[] preProcessors;
 
     public SequenceProcessor(PreProcessor... preProcessors) {

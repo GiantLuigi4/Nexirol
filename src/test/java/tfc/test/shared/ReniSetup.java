@@ -103,7 +103,7 @@ public class ReniSetup {
                     new ChannelInfo('g', 16, 10, 8, 32),
                     new ChannelInfo('b', 16, 10, 8, 32)
             )
-            .type("SRGB");
+            .type("UNORM");
     public static final int DEPTH_FORMAT = VK13.VK_FORMAT_D32_SFLOAT;
 
     public static void initialize() {

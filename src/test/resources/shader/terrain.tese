@@ -27,7 +27,7 @@ layout (location = 1) out vec3 normalOut;
 #include <shader/util/math/bitwise/u_shir.glsl>
 #include <shader/util/math/doubles.glsl>
 #include <shader/util/noise/rand.glsl>
-#include <shader/util/noise/xoroshiro.glsl>
+#include <shader/util/noise/xor_shift.glsl>
 #include <shader/util/noise/perlin_xoro.glsl>
 
 // normals

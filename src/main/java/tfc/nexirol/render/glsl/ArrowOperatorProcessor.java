@@ -24,8 +24,13 @@ public class ArrowOperatorProcessor extends PreProcessor {
 				StringBuilder text1 = new StringBuilder();
 				boolean isDash = false;
 				char[] chars = s.toCharArray();
+
+				int commentIndex = s.text.indexOf("//");
+
 				// TODO: grouping (multiple lines having similar -> operators being bunched into one ifdef statement)
 				for (int i = 0; i < chars.length; i++) {
+					if (i > commentIndex) break;
+
 					char c = chars[i];
 					
 					if (c == '-') isDash = true;
@@ -58,12 +63,16 @@ public class ArrowOperatorProcessor extends PreProcessor {
 				}
 				
 				// TODO: deal with multiple ->'s on one line
-				String def = defs.get(0);
-				output.add(new Line(-1, "#ifdef " + def));
-				output.add(new Line(s.ln, text.toString()));
-				output.add(new Line(-1, "#else"));
-				output.add(new Line(s.ln, text1.toString()));
-				output.add(new Line(-1, "#endif"));
+				if (!defs.isEmpty()) {
+					String def = defs.get(0);
+					output.add(new Line(-1, "#ifdef " + def));
+					output.add(new Line(s.ln, text.toString()));
+					output.add(new Line(-1, "#else"));
+					output.add(new Line(s.ln, text1.toString()));
+					output.add(new Line(-1, "#endif"));
+				} else {
+					output.add(s);
+				}
 			} else {
 				output.add(s);
 			}
