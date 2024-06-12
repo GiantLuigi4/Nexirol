@@ -1,4 +1,5 @@
 #version 450
+#extension GL_EXT_shader_explicit_arithmetic_types: enable
 
 layout (location = 0) in vec3 wsCoord;
 layout (location = 1) in vec3 normal;
@@ -20,6 +21,10 @@ layout(binding = 0) uniform Matrices {
 };
 
 // noise
+//#include <shader/util/math/bitwise/rotations.glsl>
+//#include <shader/util/math/bitwise/u_shir.glsl>
+//#include <shader/util/noise/rand.glsl>
+//#include <shader/util/noise/xor_shift.glsl>
 #include <shader/util/noise/hash.glsl>
 #include <shader/util/noise/simple.glsl>
 
@@ -35,7 +40,10 @@ void main() {
 //    float dAdd = distance(wsCoord.xyz, constantVec);
     float dAdd = 0.;
 
-    float nz = simpleNoise(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128), 1);
+//    Rand rand = Rand(22217711, 32024818);
+//    rand = randFor(rand, round(wsCoord.x), round(wsCoord.y), round(wsCoord.z));
+//    float nz = nextFloat(rand);
+    float nz = rand(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128));
     vec4 color;
     if (sin(normal.y) > 0.5) {
         colorOut = vec4((1-nz)/8, nz / 2 + 0.5, nz / 8, 1);

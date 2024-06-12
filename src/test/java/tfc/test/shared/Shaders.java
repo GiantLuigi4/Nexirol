@@ -25,6 +25,7 @@ public class Shaders {
     ShaderAttachment[] SKY_ATTACHMENTS;
     ShaderAttachment[] CUBE_ATTACHMENTS;
     ShaderAttachment[] TERRAIN_ATTACHMENTS;
+    ShaderAttachment[] TERRAIN_HM_ATTACHMENTS;
 
     public static String read(InputStream is) {
         try {
@@ -92,7 +93,8 @@ public class Shaders {
     );
 
     public final SmartShader SKY;
-    public final SmartShader TERRAIN;
+    public final SmartShader TERRAIN_TESSELATION;
+    public final SmartShader TERRAIN_HEIGHTMAP;
     public final SmartShader CUBE;
 
     public static final PreProcessor processor = new SequenceProcessor(
@@ -136,36 +138,56 @@ public class Shaders {
                 },
                 matrices, skyData
         );
-        TERRAIN = new SmartShader(
+        TERRAIN_TESSELATION = new SmartShader(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 TERRAIN_ATTACHMENTS = new ShaderAttachment[]{
                         new ShaderAttachment(
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.VERTEX,
-                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.vsh")),
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/tes/terrain.vsh")),
                                 "terrain_vert", "main"
                         ),
                         new ShaderAttachment(
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.FRAGMENT,
-                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.fsh")),
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/tes/terrain.fsh")),
                                 "terrain_frag", "main"
                         ),
                         new ShaderAttachment(
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.TESSELATION_EVALUATION,
-                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tese")),
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/tes/terrain.tese")),
                                 "terrain_tese", "main"
                         ),
                         new ShaderAttachment(
                                 processor, compiler,
                                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                                 ShaderStageFlags.TESSELATION_CONTROL,
-                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/terrain.tesc")),
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/tes/terrain.tesc")),
                                 "terrain_tesc", "main"
+                        )
+                },
+                matrices
+        );
+        TERRAIN_HEIGHTMAP = new SmartShader(
+                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                TERRAIN_HM_ATTACHMENTS = new ShaderAttachment[]{
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.VERTEX,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/heightmap/terrain.vsh")),
+                                "terrain_vert", "main"
+                        ),
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.FRAGMENT,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/heightmap/terrain.fsh")),
+                                "terrain_frag", "main"
                         )
                 },
                 matrices
@@ -202,7 +224,7 @@ public class Shaders {
         for (ShaderAttachment skyAttachment : TERRAIN_ATTACHMENTS) skyAttachment.destroy();
         SKY.destroy();
         CUBE.destroy();
-        TERRAIN.destroy();
+        TERRAIN_TESSELATION.destroy();
 
         matrices.destroy();
         skyData.destroy();

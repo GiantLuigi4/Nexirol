@@ -72,11 +72,11 @@ public class TerrainTest {
         shaders.SKY.bind(state, desc0);
         state.depthTest(false).depthMask(false);
         GraphicsPipeline pipeline0 = new GraphicsPipeline(pass, state, shaders.SKY.shaders);
-        shaders.TERRAIN.prepare();
-        shaders.TERRAIN.bind(state, desc0);
+        shaders.TERRAIN_TESSELATION.prepare();
+        shaders.TERRAIN_TESSELATION.bind(state, desc0);
         state.depthTest(true).depthMask(true);
         state.patchControlPoints(4).setTopology(PrimitiveType.PATCH);
-        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.TERRAIN.shaders);
+        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.TERRAIN_TESSELATION.shaders);
 
         CubePrimitive cube = new CubePrimitive(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -272,7 +272,7 @@ public class TerrainTest {
                     buffer.startLabel("Scene", 0, 0, 0.5f, 0.5f);
 
                     buffer.bindPipe(pipeline1);
-                    shaders.TERRAIN.bindCommand(pipeline1, buffer);
+                    shaders.TERRAIN_TESSELATION.bindCommand(pipeline1, buffer);
                     buffer.cullMode(CullMode.BACK);
                     buffer.viewportScissor(
                             0, 0,
