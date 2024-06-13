@@ -126,10 +126,6 @@ public class HMTest1 {
         desc0.attribute(0, 0, AttributeFormat.RGBA32_FLOAT, 0);
         desc0.attribute(0, 1, AttributeFormat.RGB32_FLOAT, formatSky.offset(VertexElements.NORMAL_XYZ));
 
-        final BufferDescriptor desc1 = new BufferDescriptor(format);
-        desc1.describe(0);
-        desc1.attribute(0, 0, AttributeFormat.UINT16, 0);
-
         // TODO: ideally this stuff would be abstracted away more
         final DescriptorPool pool = new DescriptorPool(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -143,7 +139,7 @@ public class HMTest1 {
         state.depthTest(false).depthMask(false);
         GraphicsPipeline pipeline0 = new GraphicsPipeline(pass, state, shaders.SKY.shaders);
         shaders.TERRAIN_HEIGHTMAP.prepare();
-        shaders.TERRAIN_HEIGHTMAP.bind(state, desc1);
+        shaders.TERRAIN_HEIGHTMAP.bind(state);
         state.depthTest(true).depthMask(true);
         state.setTopology(PrimitiveType.TRIANGLE);
         GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.TERRAIN_HEIGHTMAP.shaders);
@@ -153,16 +149,11 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-//        float uStep = 64f / hmSize.width();
-//        float vStep = 64f / hmSize.height();
+        int GRID = 128;
         QuadGrid quad = new QuadGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
-                64, 64,
-//                .5f - uStep / 2, .5f - vStep / 2,
-//                .5f + uStep / 2, .5f + vStep / 2
-                0, 0,
-                1, 1
+                GRID, GRID
         );
 
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
@@ -401,8 +392,8 @@ public class HMTest1 {
                     quad.bind(buffer);
                     quad.draw(
                             buffer, pipeline1,
-                            (hmSize.width() / 64) *
-                                    (hmSize.height() / 64)
+                            (hmSize.width() / GRID) *
+                                    (hmSize.height() / GRID)
                     );
                     buffer.endLabel();
                 }

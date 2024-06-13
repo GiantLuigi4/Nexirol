@@ -1,8 +1,5 @@
 #version 450
 
-// ======= MODEL DATA =======
-layout (location = 0) in uint vIdx;
-
 // ======= OUTPUT DATA =======
 layout (location = 0) out vec3 wsCoord;
 layout (location = 1) out vec3 normal;
@@ -20,7 +17,7 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 //    uniform vec2 heightRange;
 //};
 
-#define GRID 64
+#define GRID 128
 
 void main() {
     const mat4 modelRotation = mat4(mat3(modelViewMatrix));
@@ -42,17 +39,12 @@ void main() {
     vec2 POffset = vec2(x, y) * GRID;
 
     // calculate UV
-    uint vX = vIdx / (GRID + 1);
-    uint vY = vIdx % (GRID + 1);
+    uint vX = gl_VertexIndex / (GRID + 1);
+    uint vY = gl_VertexIndex % (GRID + 1);
     vec2 UV = vec2(
         vX / float(GRID),
         vY / float(GRID)
     );
-
-    // calculate scaled UV
-    float uStep = GRID / tSize.x;
-    float vStep = GRID / tSize.y;
-    vec2 sUV = UV * vec2(uStep, vStep);
 
     // calculate vertex position information
     vec4 VPosition = vec4(
@@ -64,8 +56,11 @@ void main() {
     vec4 vPos = vec4(POffset.x, 0, POffset.y, 1) + VPosition;
     vPos.xz *= 2.;
 
+    // calculate scaled UV
+    vec2 sUV = UV * (GRID / tSizeF);
+
 //    float height = texture(heightmapSampler, (UVOffset / tSizeF * GRID) + sUV).x;
-    float height = texture(heightmapSampler, (UVOffset / tSizeF * GRID) + UV / 64 /* TODO: what??? */).x;
+    float height = texture(heightmapSampler, (UVOffset / tSizeF * GRID) + sUV).x;
 //    float height = mix(heightRange.x, heightRange.y, texture(heightmapSampler, UVOffset + UV).x);
     height *= 4.0;
 

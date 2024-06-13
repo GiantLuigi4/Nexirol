@@ -12,49 +12,29 @@ import tfc.renirol.frontend.reni.draw.instance.InstanceKey;
 import tfc.renirol.frontend.reni.draw.instance.Instanceable;
 
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Objects;
 
 public class QuadGrid implements Instanceable, Drawable, InstanceKey {
-    private final GPUBuffer vbo;
     private final GPUBuffer ibo;
     final float width;
     final float height;
     final int primCount;
 
-    public int putVec3(
-            IntBuffer buffer, int start,
-            float u, float v
-    ) {
-//        buffer.put(start, u);
-//        buffer.put(start + 1, v);
-        buffer.put(start, start);
-
-        return start + 1;
-    }
-
     public QuadGrid(
             ReniLogicalDevice device,
             float width, float height,
-            int cellsX, int cellsY,
-            float minU, float minV,
-            float maxU, float maxV
+            int cellsX, int cellsY
     ) {
         this.width = width;
         this.height = height;
         primCount = 6 * cellsX * cellsY;
 
-        vbo = new GPUBuffer(device, BufferUsage.VERTEX, (cellsX * 2 + cellsY * 2 + (cellsX * cellsY)) * 1 * 4);
         ibo = new GPUBuffer(device, BufferUsage.INDEX, primCount * 2);
 
-        vbo.allocate();
         ibo.allocate();
 
         {
-            ByteBuffer buffer = vbo.createByteBuf();
-            IntBuffer fb = buffer.asIntBuffer();
-
             ByteBuffer buffer1 = ibo.createByteBuf();
             ShortBuffer ib = buffer1.asShortBuffer();
 
@@ -77,17 +57,8 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
                         ib.put(id * 6 + 4, (short) (idTo + cellsX + 2));
                         ib.put(id * 6 + 5, (short) (idTo + cellsX + 1));
                     }
-
-                    index = putVec3(
-                            fb,
-                            index,
-                            pX * (maxU - minU) + minU,
-                            pY * (maxV - minV) + minV
-                    );
                 }
             }
-            vbo.upload(0, buffer);
-            MemoryUtil.memFree(buffer);
 
             ibo.upload(0, buffer1);
             MemoryUtil.memFree(buffer1);
@@ -103,14 +74,12 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
     }
 
     public void destroy() {
-        vbo.destroy();
         ibo.destroy();
     }
 
     @Override
     public void bind(CommandBuffer buffer) {
         buffer.bindIbo(IndexSize.INDEX_16, ibo);
-        buffer.bindVbo(0, vbo);
     }
 
     @Override
