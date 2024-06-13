@@ -100,7 +100,7 @@ public class Shaders {
                             1
                     )
             ),
-            new ShaderStageFlags[]{ShaderStageFlags.VERTEX},
+            new ShaderStageFlags[]{ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT},
             0
     );
 

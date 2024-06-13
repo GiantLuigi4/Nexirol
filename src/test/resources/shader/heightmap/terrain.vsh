@@ -3,6 +3,7 @@
 // ======= OUTPUT DATA =======
 layout (location = 0) out vec3 wsCoord;
 layout (location = 1) out vec3 normal;
+layout (location = 2) out vec2 uv;
 
 // ======= UNIFORMS =======
 layout (binding = 0) uniform Matrices {
@@ -16,6 +17,9 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 //    uniform vec2 UVOffset;
 //    uniform vec2 heightRange;
 //};
+
+// heightmap
+#include <shader/heightmap/sample_hm.glsl>
 
 #define GRID 128
 
@@ -58,13 +62,11 @@ void main() {
 
     // calculate scaled UV
     vec2 sUV = UV * (GRID / tSizeF);
+    uv = (UVOffset / tSizeF * GRID) + sUV;
 
-//    float height = texture(heightmapSampler, (UVOffset / tSizeF * GRID) + sUV).x;
-    float height = texture(heightmapSampler, (UVOffset / tSizeF * GRID) + sUV).x;
-//    float height = mix(heightRange.x, heightRange.y, texture(heightmapSampler, UVOffset + UV).x);
-    height *= 4.0;
+    float height = sampleHm(uv);
+    vPos.y += height;
 
-    vPos.y += height * 1000;
     gl_Position = projectionMatrix * modelViewMatrix * vPos;
     wsCoord = vPos.xyz;
     // TODO: calculate normal... or should that be part of the job of the fragment shader?
