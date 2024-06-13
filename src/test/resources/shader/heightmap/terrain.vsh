@@ -21,7 +21,7 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 // heightmap
 #include <shader/heightmap/sample_hm.glsl>
 
-#define GRID 128
+#define GRID 32
 
 void main() {
     const mat4 modelRotation = mat4(mat3(modelViewMatrix));
@@ -58,7 +58,7 @@ void main() {
 
 
     vec4 vPos = vec4(POffset.x, 0, POffset.y, 1) + VPosition;
-    vPos.xz *= 2.;
+    vPos.xz *= 4.;
 
     // calculate scaled UV
     vec2 sUV = UV * (GRID / tSizeF);

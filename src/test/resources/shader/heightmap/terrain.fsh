@@ -48,9 +48,9 @@ vec3 crd(vec2 centre, vec2 offset) {
     );
 
     return wsCoord * vec3(0, 1, 0) + vec3(
-        offset.x * 2.,
+        offset.x * 4.,
         sampleHm(centre + (offset * texel)),
-        offset.y * 2.
+        offset.y * 4.
     );
 }
 
@@ -73,13 +73,13 @@ void main() {
 
     vec3 constantVec = vec3(0.75, 0.9, -0.5) * 300.;
     float amt = dot(normal, abs(normalize(constantVec)));
-    //    amt = max(0.0, amt);
-    //    float dAdd = distance(wsCoord.xyz, constantVec);
+    //amt = max(0.0, amt);
+    //float dAdd = distance(wsCoord.xyz, constantVec);
     float dAdd = 0.;
 
-    //    Rand rand = Rand(22217711, 32024818);
-    //    rand = randFor(rand, round(wsCoord.x), round(wsCoord.y), round(wsCoord.z));
-    //    float nz = nextFloat(rand);
+    //Rand rand = Rand(22217711, 32024818);
+    //rand = randFor(rand, round(wsCoord.x), round(wsCoord.y), round(wsCoord.z));
+    //float nz = nextFloat(rand);
     float nz = rand(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128));
     vec4 color;
     if (sin(normal.y) > 0.5) {

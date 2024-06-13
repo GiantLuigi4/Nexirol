@@ -107,7 +107,6 @@ public class HMTest1 {
         Shaders.terrainTextureData.setCTS(0, new ImageInfo(
                 img, sampler
         ));
-//        Shaders.terrainTextureData.upload();
 
 
         final RenderPassInfo pass = ReniSetup.GRAPHICS_CONTEXT.getPass(
@@ -119,7 +118,6 @@ public class HMTest1 {
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT, DynamicStateMasks.CULL_MODE);
 
         DataFormat formatSky = VertexFormats.POS4_NORMAL3;
-        DataFormat format = VertexFormats.INDEX16;
 
         final BufferDescriptor desc0 = new BufferDescriptor(formatSky);
         desc0.describe(0);
@@ -149,7 +147,7 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        int GRID = 128;
+        int GRID = 32;
         QuadGrid quad = new QuadGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
