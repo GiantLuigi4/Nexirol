@@ -119,7 +119,7 @@ public class HMTest1 {
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT, DynamicStateMasks.CULL_MODE);
 
         DataFormat formatSky = VertexFormats.POS4_NORMAL3;
-        DataFormat format = VertexFormats.UV2;
+        DataFormat format = VertexFormats.INDEX16;
 
         final BufferDescriptor desc0 = new BufferDescriptor(formatSky);
         desc0.describe(0);
@@ -128,8 +128,7 @@ public class HMTest1 {
 
         final BufferDescriptor desc1 = new BufferDescriptor(format);
         desc1.describe(0);
-        desc1.attribute(0, 0, AttributeFormat.RGBA32_FLOAT, 0);
-        desc1.attribute(0, 1, AttributeFormat.RG32_FLOAT, format.offset(VertexElements.UV0));
+        desc1.attribute(0, 0, AttributeFormat.UINT16, 0);
 
         // TODO: ideally this stuff would be abstracted away more
         final DescriptorPool pool = new DescriptorPool(

@@ -1,7 +1,7 @@
 #version 450
 
 // ======= MODEL DATA =======
-layout (location = 0) in vec2 UV;
+layout (location = 0) in uint vIdx;
 
 // ======= OUTPUT DATA =======
 layout (location = 0) out vec3 wsCoord;
@@ -20,6 +20,8 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 //    uniform vec2 heightRange;
 //};
 
+#define GRID 64
+
 void main() {
     const mat4 modelRotation = mat4(mat3(modelViewMatrix));
 
@@ -30,32 +32,42 @@ void main() {
     );
 
     // calculate instance position information
-    int size = tSize.x / 64;
-    int x = gl_InstanceIndex / size;
-    int y = gl_InstanceIndex % size;
+    int sizeX = tSize.x / GRID;
+    int sizeY = tSize.y / GRID;
+    int x = gl_InstanceIndex / sizeX;
+    int y = gl_InstanceIndex % sizeX;
     vec2 UVOffset = vec2(x, y);
-    x -= size / 2;
-    y -= size / 2;
-    vec2 POffset = vec2(x, y) * 64;
+    x -= sizeX / 2;
+    y -= sizeY / 2;
+    vec2 POffset = vec2(x, y) * GRID;
+
+    // calculate UV
+    uint vX = vIdx / (GRID + 1);
+    uint vY = vIdx % (GRID + 1);
+    vec2 UV = vec2(
+        vX / float(GRID),
+        vY / float(GRID)
+    );
+
+    // calculate scaled UV
+    float uStep = GRID / tSize.x;
+    float vStep = GRID / tSize.y;
+    vec2 sUV = UV * vec2(uStep, vStep);
 
     // calculate vertex position information
-    float uStep = 64.0 / tSize.x;
-    float vStep = 64.0 / tSize.y;
-
     vec4 VPosition = vec4(
-            UV.x, 0, UV.y, 0
-    ) * 64;
+        UV.x, 0, UV.y, 0
+    ) * GRID;
     VPosition.w = 1;
-    vec2 sUV = UV * vec2(uStep, vStep);
 
 
     vec4 vPos = vec4(POffset.x, 0, POffset.y, 1) + VPosition;
     vPos.xz *= 2.;
 
-    float height = texture(heightmapSampler, (UVOffset / tSizeF * 64) + sUV).x;
-//    float height = 0.0;
+//    float height = texture(heightmapSampler, (UVOffset / tSizeF * GRID) + sUV).x;
+    float height = texture(heightmapSampler, (UVOffset / tSizeF * GRID) + UV / 64 /* TODO: what??? */).x;
 //    float height = mix(heightRange.x, heightRange.y, texture(heightmapSampler, UVOffset + UV).x);
-    height *= 2.0;
+    height *= 4.0;
 
     vPos.y += height * 1000;
     gl_Position = projectionMatrix * modelViewMatrix * vPos;

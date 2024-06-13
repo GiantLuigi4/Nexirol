@@ -12,7 +12,7 @@ import tfc.renirol.frontend.reni.draw.instance.InstanceKey;
 import tfc.renirol.frontend.reni.draw.instance.Instanceable;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.Objects;
 
@@ -24,13 +24,14 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
     final int primCount;
 
     public int putVec3(
-            FloatBuffer buffer, int start,
+            IntBuffer buffer, int start,
             float u, float v
     ) {
-        buffer.put(start, u);
-        buffer.put(start + 1, v);
+//        buffer.put(start, u);
+//        buffer.put(start + 1, v);
+        buffer.put(start, start);
 
-        return start + 2;
+        return start + 1;
     }
 
     public QuadGrid(
@@ -44,7 +45,7 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
         this.height = height;
         primCount = 6 * cellsX * cellsY;
 
-        vbo = new GPUBuffer(device, BufferUsage.VERTEX, (cellsX * 2 + cellsY * 2 + (cellsX * cellsY)) * 2 * 4);
+        vbo = new GPUBuffer(device, BufferUsage.VERTEX, (cellsX * 2 + cellsY * 2 + (cellsX * cellsY)) * 1 * 4);
         ibo = new GPUBuffer(device, BufferUsage.INDEX, primCount * 2);
 
         vbo.allocate();
@@ -52,7 +53,7 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
 
         {
             ByteBuffer buffer = vbo.createByteBuf();
-            FloatBuffer fb = buffer.asFloatBuffer();
+            IntBuffer fb = buffer.asIntBuffer();
 
             ByteBuffer buffer1 = ibo.createByteBuf();
             ShortBuffer ib = buffer1.asShortBuffer();
