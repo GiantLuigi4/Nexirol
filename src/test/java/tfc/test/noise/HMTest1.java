@@ -66,7 +66,7 @@ public class HMTest1 {
 
         // === Heightmap Size ===
         VkExtent2D hmSize = VkExtent2D.calloc();
-        hmSize.set(4096, 4096);
+        hmSize.set(4096 * 2, 4096 * 2);
 //        hmSize.set(64 * 64, 64 * 64);
         // === Setup Heightmap FBO ===
         Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
@@ -147,12 +147,13 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        int GRID = 32;
+        int GRID = 1;
         QuadGrid quad = new QuadGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
                 GRID, GRID
         );
+        GRID = 32;
 
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
 

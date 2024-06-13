@@ -43,12 +43,12 @@ void main() {
     vec2 POffset = vec2(x, y) * GRID;
 
     // calculate UV
-    uint vX = gl_VertexIndex / (GRID + 1);
-    uint vY = gl_VertexIndex % (GRID + 1);
+    uint vX = gl_VertexIndex / (1 + 1);
+    uint vY = gl_VertexIndex % (1 + 1);
     vec2 UV = vec2(
         vX / float(GRID),
         vY / float(GRID)
-    );
+    ) * GRID;
 
     // calculate vertex position information
     vec4 VPosition = vec4(
