@@ -25,17 +25,12 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
 
     public int putVec3(
             FloatBuffer buffer, int start,
-            float x, float z,
             float u, float v
     ) {
-        buffer.put(start, x);
-        buffer.put(start + 1, 0);
-        buffer.put(start + 2, z);
-        buffer.put(start + 3, 1);
-        buffer.put(start + 4, u);
-        buffer.put(start + 5, v);
+        buffer.put(start, u);
+        buffer.put(start + 1, v);
 
-        return start + 6;
+        return start + 2;
     }
 
     public QuadGrid(
@@ -49,14 +44,11 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
         this.height = height;
         primCount = 6 * cellsX * cellsY;
 
-        vbo = new GPUBuffer(device, BufferUsage.VERTEX, (cellsX * 2 + cellsY * 2 + (cellsX * cellsY)) * 6 * 4);
+        vbo = new GPUBuffer(device, BufferUsage.VERTEX, (cellsX * 2 + cellsY * 2 + (cellsX * cellsY)) * 2 * 4);
         ibo = new GPUBuffer(device, BufferUsage.INDEX, primCount * 2);
 
         vbo.allocate();
         ibo.allocate();
-
-        float halfX = (width * cellsX) / 2;
-        float halfY = (height * cellsX) / 2;
 
         {
             ByteBuffer buffer = vbo.createByteBuf();
@@ -88,7 +80,6 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
                     index = putVec3(
                             fb,
                             index,
-                            x - halfX, y - halfY,
                             pX * (maxU - minU) + minU,
                             pY * (maxV - minV) + minV
                     );

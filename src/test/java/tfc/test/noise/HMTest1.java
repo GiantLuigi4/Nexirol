@@ -119,7 +119,7 @@ public class HMTest1 {
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT, DynamicStateMasks.CULL_MODE);
 
         DataFormat formatSky = VertexFormats.POS4_NORMAL3;
-        DataFormat format = VertexFormats.POS4_UV2;
+        DataFormat format = VertexFormats.UV2;
 
         final BufferDescriptor desc0 = new BufferDescriptor(formatSky);
         desc0.describe(0);
@@ -154,16 +154,16 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        float uStep = 64f / hmSize.width();
-        float vStep = 64f / hmSize.height();
+//        float uStep = 64f / hmSize.width();
+//        float vStep = 64f / hmSize.height();
         QuadGrid quad = new QuadGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
                 64, 64,
-                .5f - uStep / 2, .5f - vStep / 2,
-                .5f + uStep / 2, .5f + vStep / 2
-//                0, 0,
-//                1, 1
+//                .5f - uStep / 2, .5f - vStep / 2,
+//                .5f + uStep / 2, .5f + vStep / 2
+                0, 0,
+                1, 1
         );
 
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
