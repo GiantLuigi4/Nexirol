@@ -8,7 +8,6 @@ import org.lwjgl.vulkan.VK13;
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.nexirol.math.Matrices;
 import tfc.nexirol.primitives.CubePrimitive;
-import tfc.nexirol.primitives.QuadPrimitive;
 import tfc.nexirol.render.DataLayout;
 import tfc.nexirol.render.UniformData;
 import tfc.renirol.frontend.enums.DescriptorType;
@@ -23,6 +22,9 @@ import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
 import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.modes.CullMode;
 import tfc.renirol.frontend.enums.modes.PrimitiveType;
+import tfc.renirol.frontend.enums.modes.image.FilterMode;
+import tfc.renirol.frontend.enums.modes.image.MipmapMode;
+import tfc.renirol.frontend.enums.modes.image.WrapMode;
 import tfc.renirol.frontend.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
@@ -35,17 +37,20 @@ import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
+import tfc.renirol.frontend.rendering.resource.descriptor.ImageInfo;
 import tfc.renirol.frontend.rendering.resource.image.Image;
+import tfc.renirol.frontend.rendering.resource.image.texture.TextureSampler;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.renirol.frontend.windowing.listener.KeyboardListener;
 import tfc.renirol.util.ShaderCompiler;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
+import tfc.test.noise.geom.QuadGrid;
 import tfc.test.shared.ReniSetup;
 import tfc.test.shared.Scenario;
 import tfc.test.shared.Shaders;
 
-public class HMTest {
+public class HMTest1 {
     public static void main(String[] args) {
 //        System.setProperty("joml.nounsafe", "true");
         Scenario.useWinNT = false;
@@ -53,6 +58,7 @@ public class HMTest {
         ReniSetup.initialize();
 
 
+        Shaders shaders = new Shaders();
         ShaderCompiler compiler = new ShaderCompiler();
         compiler.setupGlsl();
         compiler.debug();
@@ -60,7 +66,8 @@ public class HMTest {
 
         // === Heightmap Size ===
         VkExtent2D hmSize = VkExtent2D.calloc();
-        hmSize.set(4096 * 2, 4096 * 2);
+        hmSize.set(4096, 4096);
+//        hmSize.set(64 * 64, 64 * 64);
         // === Setup Heightmap FBO ===
         Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
         img.setUsage(SwapchainUsage.COLOR);
@@ -90,11 +97,18 @@ public class HMTest {
                 "heightmap.hsh",
                 hmData
         );
+        TextureSampler sampler = img.createSampler(
+                WrapMode.CLAMP, WrapMode.CLAMP,
+                FilterMode.LINEAR, FilterMode.LINEAR,
+                MipmapMode.NEAREST,
+                false, 0,
+                0, 0, 0
+        );
+        Shaders.terrainTextureData.setCTS(0, new ImageInfo(
+                img, sampler
+        ));
+//        Shaders.terrainTextureData.upload();
 
-
-
-
-        Shaders shaders = new Shaders();
 
         final RenderPassInfo pass = ReniSetup.GRAPHICS_CONTEXT.getPass(
                 Operation.CLEAR, Operation.PERFORM,
@@ -104,12 +118,18 @@ public class HMTest {
         PipelineState state = new PipelineState(ReniSetup.GRAPHICS_CONTEXT.getLogical());
         state.dynamicState(DynamicStateMasks.SCISSOR, DynamicStateMasks.VIEWPORT, DynamicStateMasks.CULL_MODE);
 
-        DataFormat format = VertexFormats.POS4_NORMAL3;
+        DataFormat formatSky = VertexFormats.POS4_NORMAL3;
+        DataFormat format = VertexFormats.POS4_UV2;
 
-        final BufferDescriptor desc0 = new BufferDescriptor(format);
+        final BufferDescriptor desc0 = new BufferDescriptor(formatSky);
         desc0.describe(0);
         desc0.attribute(0, 0, AttributeFormat.RGBA32_FLOAT, 0);
-        desc0.attribute(0, 1, AttributeFormat.RGB32_FLOAT, format.offset(VertexElements.NORMAL_XYZ));
+        desc0.attribute(0, 1, AttributeFormat.RGB32_FLOAT, formatSky.offset(VertexElements.NORMAL_XYZ));
+
+        final BufferDescriptor desc1 = new BufferDescriptor(format);
+        desc1.describe(0);
+        desc1.attribute(0, 0, AttributeFormat.RGBA32_FLOAT, 0);
+        desc1.attribute(0, 1, AttributeFormat.RG32_FLOAT, format.offset(VertexElements.UV0));
 
         // TODO: ideally this stuff would be abstracted away more
         final DescriptorPool pool = new DescriptorPool(
@@ -123,20 +143,30 @@ public class HMTest {
         shaders.SKY.bind(state, desc0);
         state.depthTest(false).depthMask(false);
         GraphicsPipeline pipeline0 = new GraphicsPipeline(pass, state, shaders.SKY.shaders);
-        shaders.TERRAIN_TESSELATION.prepare();
-        shaders.TERRAIN_TESSELATION.bind(state, desc0);
+        shaders.TERRAIN_HEIGHTMAP.prepare();
+        shaders.TERRAIN_HEIGHTMAP.bind(state, desc1);
         state.depthTest(true).depthMask(true);
-        state.patchControlPoints(4).setTopology(PrimitiveType.PATCH);
-        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.TERRAIN_TESSELATION.shaders);
+        state.setTopology(PrimitiveType.TRIANGLE);
+        GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.TERRAIN_HEIGHTMAP.shaders);
 
         CubePrimitive cube = new CubePrimitive(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
-                format, 1, 1, 1
+                formatSky, 1, 1, 1
         );
-        QuadPrimitive quad = new QuadPrimitive(
+
+        float uStep = 64f / hmSize.width();
+        float vStep = 64f / hmSize.height();
+        QuadGrid quad = new QuadGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
-                format, 1, 1, false
+                1, 1,
+                64, 64,
+                .5f - uStep / 2, .5f - vStep / 2,
+                .5f + uStep / 2, .5f + vStep / 2
+//                0, 0,
+//                1, 1
         );
+
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
 
         try {
             int frame = 0;
@@ -181,7 +211,7 @@ public class HMTest {
 
                 }
             });
-            ((GLFWWindow) ReniSetup.WINDOW).captureMouse();
+            ReniSetup.WINDOW.captureMouse();
 
             Vector3f cameraPos = new Vector3f();
             Quaternionf cameraRotation = new Quaternionf(0, 0, 0, 1);
@@ -225,6 +255,13 @@ public class HMTest {
                         hmSize.width(), hmSize.height()
                 );
                 shader.finishCompute(cmd);
+
+                cmd.transition(
+                        img.getHandle(),
+                        StageMask.COLOR_ATTACHMENT_OUTPUT, StageMask.GRAPHICS,
+                        ImageLayout.TRANSFER_DST_OPTIMAL, ImageLayout.SHADER_READONLY,
+                        AccessMask.TRANSFER_WRITE, AccessMask.SHADER_READ
+                );
 
                 cmd.end();
                 cmd.submit(
@@ -354,7 +391,7 @@ public class HMTest {
                     buffer.startLabel("Scene", 0, 0, 0.5f, 0.5f);
 
                     buffer.bindPipe(pipeline1);
-                    shaders.TERRAIN_TESSELATION.bindCommand(pipeline1, buffer);
+                    shaders.TERRAIN_HEIGHTMAP.bindCommand(pipeline1, buffer);
                     buffer.cullMode(CullMode.BACK);
                     buffer.viewportScissor(
                             0, 0,
@@ -363,7 +400,11 @@ public class HMTest {
                             0f, 1f
                     );
                     quad.bind(buffer);
-                    quad.draw(buffer, pipeline1, 11 * 11);
+                    quad.draw(
+                            buffer, pipeline1,
+                            (hmSize.width() / 64) *
+                                    (hmSize.height() / 64)
+                    );
                     buffer.endLabel();
                 }
                 buffer.endPass();
@@ -378,27 +419,6 @@ public class HMTest {
                         AccessMask.COLOR_WRITE,
                         AccessMask.NONE
                 );
-
-                {
-                    hmData.setF(0, 0, 1);
-                    hmData.setF(1, 0, 1);
-                    hmData.upload(buffer);
-
-                    shader.beginCompute(buffer, fbo, hmSize);
-                    shader.computeNoise(
-                            buffer,
-                            0, 0,
-                            0, hmSize.height() - 16,
-                            hmSize.width() - 16, 16
-                    );
-                    shader.computeNoise(
-                            buffer,
-                            0, 0,
-                            hmSize.width() - 16, 0,
-                            16, hmSize.height()
-                    );
-                    shader.finishCompute(buffer);
-                }
 
                 buffer.end();
 

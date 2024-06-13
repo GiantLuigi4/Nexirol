@@ -54,5 +54,5 @@ void main() {
     }
 
     colorOut *= color;
-    colorOut = colorOut * vec4(vec3(amt) * vec3(1-(dAdd / 1000.)), 1.);
+//    colorOut = colorOut * vec4(vec3(amt) * vec3(1-(dAdd / 1000.)), 1.);
 }

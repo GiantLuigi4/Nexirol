@@ -92,6 +92,18 @@ public class Shaders {
             1
     );
 
+    public static final UniformData terrainTextureData = new UniformData(
+            false, DataLayout.COMBINED_TEXTURE_SAMPLER,
+            new DataFormat(
+                    new DataElement(
+                            NumericPrimitive.LONG,
+                            1
+                    )
+            ),
+            new ShaderStageFlags[]{ShaderStageFlags.VERTEX},
+            0
+    );
+
     public final SmartShader SKY;
     public final SmartShader TERRAIN_TESSELATION;
     public final SmartShader TERRAIN_HEIGHTMAP;
@@ -109,6 +121,7 @@ public class Shaders {
         matrices.setup(ReniSetup.GRAPHICS_CONTEXT);
         skyData.setup(ReniSetup.GRAPHICS_CONTEXT);
         cubeInstanceData.setup(ReniSetup.GRAPHICS_CONTEXT);
+        terrainTextureData.setup(ReniSetup.GRAPHICS_CONTEXT);
 
         cubeInstanceData.getDescriptor().attribute(1, 2, AttributeFormat.RGB32_FLOAT, 0);
         cubeInstanceData.getDescriptor().attribute(1, 3, AttributeFormat.RGBA32_FLOAT, 12);
@@ -190,7 +203,8 @@ public class Shaders {
                                 "terrain_frag", "main"
                         )
                 },
-                matrices
+                matrices,
+                terrainTextureData
         );
         CUBE = new SmartShader(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
@@ -222,9 +236,11 @@ public class Shaders {
         for (ShaderAttachment skyAttachment : SKY_ATTACHMENTS) skyAttachment.destroy();
         for (ShaderAttachment skyAttachment : CUBE_ATTACHMENTS) skyAttachment.destroy();
         for (ShaderAttachment skyAttachment : TERRAIN_ATTACHMENTS) skyAttachment.destroy();
+        for (ShaderAttachment skyAttachment : TERRAIN_HM_ATTACHMENTS) skyAttachment.destroy();
         SKY.destroy();
         CUBE.destroy();
         TERRAIN_TESSELATION.destroy();
+        TERRAIN_HEIGHTMAP.destroy();
 
         matrices.destroy();
         skyData.destroy();

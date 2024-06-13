@@ -17,6 +17,7 @@ import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
 import tfc.renirol.frontend.rendering.resource.buffer.GPUBuffer;
 import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorLayoutInfo;
+import tfc.renirol.frontend.rendering.resource.descriptor.ImageInfo;
 import tfc.renirol.itf.ReniDestructable;
 
 import java.nio.ByteBuffer;
@@ -41,6 +42,7 @@ public class UniformData implements ReniDestructable {
 
     DescriptorLayoutInfo info;
     BufferDescriptor descriptor;
+    ImageInfo[] samps;
 
     public UniformData(boolean constant, DataLayout layout, DataFormat format, ShaderStageFlags[] stages, int binding) {
         this.format = format;
@@ -97,9 +99,17 @@ public class UniformData implements ReniDestructable {
             } else {
                 info = new DescriptorLayoutInfo(
                         binding,
-                        DescriptorType.UNIFORM_BUFFER,
+                        switch (layout) {
+                            case COMBINED_TEXTURE_SAMPLER -> DescriptorType.COMBINED_SAMPLED_IMAGE;
+                            default -> DescriptorType.UNIFORM_BUFFER;
+                        },
                         1, stages
                 );
+                if (
+                        layout == DataLayout.COMBINED_TEXTURE_SAMPLER
+                ) {
+                    samps = new ImageInfo[format.elements.value.arrayCount];
+                }
             }
         }
     }
@@ -146,6 +156,7 @@ public class UniformData implements ReniDestructable {
     }
 
     int ulStart = Integer.MAX_VALUE;
+
     int ulEnd = 0;
 
     public ByteBuffer get(int index) {
@@ -272,6 +283,20 @@ public class UniformData implements ReniDestructable {
         ulStart = Math.min(ulStart, indexed.memoryOffset);
         ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4));
         bytes.position(0);
+    }
+
+
+    /**
+     * CTS: combined texture sampler
+     *
+     * @param index
+     * @param sampler
+     */
+    public void setCTS(int index, ImageInfo sampler) {
+        if (samps == null)
+            throw new RuntimeException("Invalid data layout");
+
+        this.samps[index] = sampler;
     }
 
     public void upload() {
