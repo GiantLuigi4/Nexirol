@@ -1,4 +1,4 @@
-package tfc.test.noise;
+package tfc.test.noise.hm;
 
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VkExtent2D;
@@ -28,13 +28,14 @@ import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
+import tfc.renirol.itf.ReniDestructable;
 import tfc.renirol.util.ShaderCompiler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class HeightmapShader {
+public class HeightmapShader implements ReniDestructable {
     final ReniLogicalDevice device;
 
     VkExtent2D passExtents;
@@ -45,6 +46,15 @@ public class HeightmapShader {
     final PipelineState state;
     final GraphicsPipeline noisePipe;
     final GraphicsPipeline blitPipe;
+
+    @Override
+    public void destroy() {
+        noisePipe.destroy();
+        noiseShader.destroy();
+        blitPipe.destroy();
+        blitShader.destroy();
+        d0.destroy();
+    }
 
     private static final byte[] vsh = VkUtil.managed(VkUtil.read(
             HeightmapShader.class.getClassLoader().getResourceAsStream("shader/internal/heightmap.vsh")

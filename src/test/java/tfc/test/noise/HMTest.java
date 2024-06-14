@@ -41,6 +41,7 @@ import tfc.renirol.frontend.windowing.listener.KeyboardListener;
 import tfc.renirol.util.ShaderCompiler;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
+import tfc.test.noise.hm.HeightmapShader;
 import tfc.test.shared.ReniSetup;
 import tfc.test.shared.Scenario;
 import tfc.test.shared.Shaders;

@@ -53,8 +53,12 @@ vec3 crd(vec2 centre, vec2 offset) {
     );
 }
 
+const vec3 constantVec = vec3(0.75, 0.9, -0.5) * 300.;
+const vec3 constantVecNormalized = normalize(constantVec);
+
 void main() {
     vec3 normalUR = calculateNormal(
+        //wsCoord,
         crd(uv, vec2(0)),
         crd(uv, vec2(1, 0)),
         crd(uv, vec2(0, 1))
@@ -64,21 +68,16 @@ void main() {
 
     normalOut = vec4(normal, 1.0);
 
-    vec3 constantVec = vec3(0.75, 0.9, -0.5) * 300.;
-    float amt = dot(normal, abs(normalize(constantVec)));
-    //amt = max(0.0, amt);
-    //float dAdd = distance(wsCoord.xyz, constantVec);
-    float dAdd = 0.;
+    const float amt = dot(normal, constantVecNormalized);
+    const float dAdd = 0.;
 
-    float nz = rand(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128));
-    vec4 color;
-    if (sin(normal.y) > 0.5) {
-        colorOut = vec4((1 - nz) / 8, nz / 2 + 0.5, nz / 8, 1);
-        color = grassGreen;
-    } else {
-        colorOut = vec4(nz.xxx, 1);
-        color = stoneGray;
-    }
+    const float nz = rand(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128));
+    const float sinValue = sin(normal.y);
+    const vec4 grassColor = vec4((1 - nz) / 8, nz / 2 + 0.5, nz / 8, 1);
+    const vec4 stoneColor = vec4(nz.xxx, 1);
+
+    colorOut = mix(stoneColor, grassColor, step(0.5, sinValue));
+    const vec4 color = mix(stoneGray, grassGreen, step(0.5, sinValue));
 
     colorOut *= color;
     colorOut = colorOut * vec4(vec3(amt) * vec3(1 - (dAdd / 1000.)), 1.);

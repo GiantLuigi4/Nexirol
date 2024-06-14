@@ -42,10 +42,13 @@ import tfc.renirol.frontend.rendering.resource.image.Image;
 import tfc.renirol.frontend.rendering.resource.image.texture.TextureSampler;
 import tfc.renirol.frontend.windowing.glfw.GLFWWindow;
 import tfc.renirol.frontend.windowing.listener.KeyboardListener;
+import tfc.renirol.itf.ReniDestructable;
 import tfc.renirol.util.ShaderCompiler;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
 import tfc.test.noise.geom.QuadPointGrid;
+import tfc.test.noise.hm.Heightmap;
+import tfc.test.noise.hm.HeightmapShader;
 import tfc.test.shared.ReniSetup;
 import tfc.test.shared.Scenario;
 import tfc.test.shared.Shaders;
@@ -64,19 +67,6 @@ public class HMTest1 {
         compiler.debug();
 
 
-        // === Heightmap Size ===
-        VkExtent2D hmSize = VkExtent2D.calloc();
-        hmSize.set(2048 * 3, 2048 * 3);
-//        hmSize.set(256 * 4, 256 * 4);
-//        hmSize.set(64 * 64, 64 * 64);
-//        hmSize.set(64 * 64, 64 * 64);
-        // === Setup Heightmap FBO ===
-        Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
-        img.setUsage(SwapchainUsage.COLOR, SwapchainUsage.SAMPLED);
-        img.create(hmSize.width(), hmSize.height(), VK13.VK_FORMAT_R16_UNORM);
-        Attachment attachment = new Attachment(img, false, false);
-        Framebuffer fbo = new Framebuffer(attachment);
-        RenderPassInfo heightmapPass = fbo.genericPass(ReniSetup.GRAPHICS_CONTEXT.getLogical(), Operation.PERFORM, Operation.PERFORM);
         // === Setup Heightmap Uniform Data ===
         DataElement MAP = new DataElement(NumericPrimitive.FLOAT, 2);
         DataElement TEX = new DataElement(NumericPrimitive.FLOAT, 2);
@@ -89,7 +79,19 @@ public class HMTest1 {
                 1
         );
         hmData.setup(ReniSetup.GRAPHICS_CONTEXT, true);
-        // === Create Shader ===
+
+        // === Create Heightmap Image ===
+        int res = 2048 * 3;
+//        int res = 256 * 4;
+//        int res = 64 * 64;
+        Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
+        img.setUsage(SwapchainUsage.COLOR, SwapchainUsage.SAMPLED);
+        img.create(res, res, VK13.VK_FORMAT_R16_UNORM);
+        Attachment attachment = new Attachment(img, false, false);
+        Framebuffer fbo = new Framebuffer(attachment);
+        RenderPassInfo heightmapPass = fbo.genericPass(ReniSetup.GRAPHICS_CONTEXT.getLogical(), Operation.PERFORM, Operation.PERFORM);
+
+        // === Create Heightmap Handler ===
         HeightmapShader shader = new HeightmapShader(
                 heightmapPass,
                 ReniSetup.GRAPHICS_CONTEXT,
@@ -99,16 +101,18 @@ public class HMTest1 {
                 "heightmap.hsh",
                 hmData
         );
-        TextureSampler sampler = img.createSampler(
+        Heightmap map = new Heightmap(
+                shader, res, res,
+                img, fbo, heightmapPass
+        );
+        TextureSampler sampler = map.createSampler(
                 WrapMode.CLAMP, WrapMode.CLAMP,
-                FilterMode.LINEAR, FilterMode.LINEAR,
+                FilterMode.NEAREST, FilterMode.LINEAR,
                 MipmapMode.NEAREST,
                 false, 0,
                 0, 0, 0
         );
-        Shaders.terrainTextureData.setCTS(0, new ImageInfo(
-                img, sampler
-        ));
+        Shaders.terrainTextureData.setCTS(0, new ImageInfo(img, sampler));
 
 
         final RenderPassInfo pass = ReniSetup.GRAPHICS_CONTEXT.getPass(
@@ -149,13 +153,13 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        int GRID = 2;
+        int GRID = 8;
         QuadPointGrid quad = new QuadPointGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
                 GRID, GRID, false
         );
-        GRID *= 32;
+        GRID *= 64;
 
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
 
@@ -237,15 +241,7 @@ public class HMTest1 {
                 hmData.setF(0, 0, 1);
                 hmData.setF(1, 0, 1);
                 hmData.upload(cmd);
-
-                shader.beginCompute(cmd, fbo, hmSize);
-                shader.computeNoise(
-                        cmd,
-                        0, 0,
-                        0, 0,
-                        hmSize.width(), hmSize.height()
-                );
-                shader.finishCompute(cmd);
+                map.prepare(cmd, 0, 0);
 
                 cmd.transition(
                         img.getHandle(),
@@ -393,8 +389,8 @@ public class HMTest1 {
                     quad.bind(buffer);
                     quad.draw(
                             buffer, pipeline1,
-                            (hmSize.width() / GRID) *
-                                    (hmSize.height() / GRID)
+                            (res / GRID) *
+                                    (res / GRID)
                     );
                     buffer.endLabel();
                 }
@@ -430,6 +426,16 @@ public class HMTest1 {
         } catch (Throwable err) {
             err.printStackTrace();
         }
+
+        // destroy heightmap
+        img.destroy();
+        if (fbo instanceof ReniDestructable destructable)
+            destructable.destroy();
+        img.destroy();
+        pass.destroy();
+        sampler.destroy();
+        map.destroy();
+        shader.destroy();
 
         pool.destroy();
         quad.destroy();

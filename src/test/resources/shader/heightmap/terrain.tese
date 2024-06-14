@@ -11,6 +11,11 @@ layout (binding = 0) uniform Matrices {
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
+//layout (binding = 1) uniform HeightmapData {
+//    uniform vec2 UVOffset;
+//    uniform vec2 heightRange;
+//};
+
 // ======= INPUT DATA =======
 layout (location = 0) in vec2[] uv;
 
@@ -49,7 +54,7 @@ void main() {
         uv[1], uv[3],
         uvC
     );
-    p.y += sampleHm(uvLerp);
+    p.y = sampleHm(uvLerp);
 
     wsCoordOut = p.xyz;
 

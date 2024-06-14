@@ -27,10 +27,10 @@ void main() {
 
     // ======= TESSELATION LEVEL =======
     if (gl_InvocationID == 0) {
-        const float MIN_TESS_LEVEL = 2;
-        const float MAX_TESS_LEVEL = 32;
+        const float MIN_TESS_LEVEL = 1;
+        const float MAX_TESS_LEVEL = 64;
         const float MIN_DISTANCE = 64;
-        const float MAX_DISTANCE = 1024 * 2;
+        const float MAX_DISTANCE = 2048 * 2;
 
         const mat4 modelRotation = mat4(mat3(modelViewMatrix));
         vec4 offset = modelViewMatrix * vec4(0, 0, 0, 1);

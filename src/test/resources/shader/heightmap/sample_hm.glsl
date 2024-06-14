@@ -1,5 +1,5 @@
-#define VERT 2
-#define GRID (32*VERT)
+#define VERT 8
+#define GRID (64*VERT)
 #define VERT_SCALE 3.0
 
 float sampleHm(vec2 uv) {

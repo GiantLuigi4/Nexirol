@@ -117,7 +117,7 @@ jar {
 
 task runApp(type: JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
-    main = "tfc.test.Main"
+    main = "tfc.test.noise.HMTest1"
 }
 
 tasks.withType(Jar.class).configureEach {

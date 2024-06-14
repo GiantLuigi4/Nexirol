@@ -10,11 +10,6 @@ layout (binding = 0) uniform Matrices {
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
-//layout (binding = 1) uniform HeightmapData {
-//    uniform vec2 UVOffset;
-//    uniform vec2 heightRange;
-//};
-
 // heightmap
 #include <shader/heightmap/sample_hm.glsl>
 
@@ -30,12 +25,10 @@ void main() {
     // calculate instance position information
     const int sizeX = tSize.x / GRID;
     const int sizeY = tSize.y / GRID;
-    int x = gl_InstanceIndex / sizeX;
-    int y = gl_InstanceIndex % sizeX;
+    const int x = (sizeX - (gl_InstanceIndex / sizeX)) % sizeX;
+    const int y = (sizeY - (gl_InstanceIndex % sizeX)) % sizeY;
     const vec2 UVOffset = vec2(x, y);
-    x -= sizeX / 2;
-    y -= sizeY / 2;
-    const vec2 POffset = vec2(x, y) * GRID;
+    const vec2 POffset = (vec2(x, y) - (vec2(sizeX, sizeY) * 0.5)) * GRID;
 
     // calculate UV
     const uint vX = gl_VertexIndex / (VERT + 1);
