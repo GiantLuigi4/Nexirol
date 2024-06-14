@@ -47,7 +47,10 @@ public class Shaders {
                     new DataElement(NumericPrimitive.FLOAT, 4 * 4),
                     new DataElement(NumericPrimitive.FLOAT, 4 * 4)
             ),
-            new ShaderStageFlags[]{ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT, ShaderStageFlags.TESSELATION_EVALUATION, ShaderStageFlags.TESSELATION_CONTROL},
+            new ShaderStageFlags[]{
+                    ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT,
+                    ShaderStageFlags.TESSELATION_EVALUATION, ShaderStageFlags.TESSELATION_CONTROL
+            },
             0
     );
     public static final UniformData skyData = new UniformData(
@@ -100,7 +103,10 @@ public class Shaders {
                             1
                     )
             ),
-            new ShaderStageFlags[]{ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT},
+            new ShaderStageFlags[]{
+                    ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT,
+                    ShaderStageFlags.TESSELATION_EVALUATION, ShaderStageFlags.TESSELATION_CONTROL
+            },
             0
     );
 
@@ -201,6 +207,20 @@ public class Shaders {
                                 ShaderStageFlags.FRAGMENT,
                                 read(Shaders.class.getClassLoader().getResourceAsStream("shader/heightmap/terrain.fsh")),
                                 "terrain_frag", "main"
+                        ),
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.TESSELATION_EVALUATION,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/heightmap/terrain.tese")),
+                                "terrain_tese", "main"
+                        ),
+                        new ShaderAttachment(
+                                processor, compiler,
+                                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                                ShaderStageFlags.TESSELATION_CONTROL,
+                                read(Shaders.class.getClassLoader().getResourceAsStream("shader/heightmap/terrain.tesc")),
+                                "terrain_tesc", "main"
                         )
                 },
                 matrices,

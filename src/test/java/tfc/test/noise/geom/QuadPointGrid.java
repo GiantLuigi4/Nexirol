@@ -15,20 +15,21 @@ import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.Objects;
 
-public class QuadGrid implements Instanceable, Drawable, InstanceKey {
+public class QuadPointGrid implements Instanceable, Drawable, InstanceKey {
     private final GPUBuffer ibo;
     final float width;
     final float height;
     final int primCount;
 
-    public QuadGrid(
+    public QuadPointGrid(
             ReniLogicalDevice device,
             float width, float height,
-            int cellsX, int cellsY
+            int cellsX, int cellsY,
+            boolean tris
     ) {
         this.width = width;
         this.height = height;
-        primCount = 6 * cellsX * cellsY;
+        primCount = (tris ? 6 : 4) * cellsX * cellsY;
 
         ibo = new GPUBuffer(device, BufferUsage.INDEX, primCount * 2);
 
@@ -42,20 +43,24 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
             // top/bottom
             for (int x = 0; x <= cellsX; x++) {
                 for (int y = 0; y <= cellsY; y++) {
-                    float pX = x / (float) cellsX;
-                    float pY = y / (float) cellsY;
-
                     if (x != cellsX && y != cellsY) {
                         int id = (x * cellsX + y);
                         int idTo = id + (id / (cellsX ));
 
-                        ib.put(id * 6 + 0, (short) (idTo + cellsX + 1));
-                        ib.put(id * 6 + 1, (short) (idTo));
-                        ib.put(id * 6 + 2, (short) (idTo + 1));
+                        if (tris) {
+                            ib.put(id * 6 + 0, (short) (idTo + cellsX + 1));
+                            ib.put(id * 6 + 1, (short) (idTo));
+                            ib.put(id * 6 + 2, (short) (idTo + 1));
 
-                        ib.put(id * 6 + 3, (short) (idTo + 1));
-                        ib.put(id * 6 + 4, (short) (idTo + cellsX + 2));
-                        ib.put(id * 6 + 5, (short) (idTo + cellsX + 1));
+                            ib.put(id * 6 + 3, (short) (idTo + 1));
+                            ib.put(id * 6 + 4, (short) (idTo + cellsX + 2));
+                            ib.put(id * 6 + 5, (short) (idTo + cellsX + 1));
+                        } else {
+                            ib.put(id * 4 + 0, (short) (idTo + cellsX + 2));
+                            ib.put(id * 4 + 1, (short) (idTo + cellsX + 1));
+                            ib.put(id * 4 + 2, (short) (idTo + 1));
+                            ib.put(id * 4 + 3, (short) (idTo));
+                        }
                     }
                 }
             }
@@ -104,7 +109,7 @@ public class QuadGrid implements Instanceable, Drawable, InstanceKey {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        QuadGrid that = (QuadGrid) o;
+        QuadPointGrid that = (QuadPointGrid) o;
         return width == that.width && height == that.height && primCount == that.primCount;
     }
 

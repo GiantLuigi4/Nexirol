@@ -45,7 +45,7 @@ import tfc.renirol.frontend.windowing.listener.KeyboardListener;
 import tfc.renirol.util.ShaderCompiler;
 import tfc.test.data.VertexElements;
 import tfc.test.data.VertexFormats;
-import tfc.test.noise.geom.QuadGrid;
+import tfc.test.noise.geom.QuadPointGrid;
 import tfc.test.shared.ReniSetup;
 import tfc.test.shared.Scenario;
 import tfc.test.shared.Shaders;
@@ -66,11 +66,12 @@ public class HMTest1 {
 
         // === Heightmap Size ===
         VkExtent2D hmSize = VkExtent2D.calloc();
-        hmSize.set(4096 * 2, 4096 * 2);
+        hmSize.set(2048 * 3, 2048 * 3);
+//        hmSize.set(256 * 4, 256 * 4);
 //        hmSize.set(64 * 64, 64 * 64);
         // === Setup Heightmap FBO ===
         Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
-        img.setUsage(SwapchainUsage.COLOR);
+        img.setUsage(SwapchainUsage.COLOR, SwapchainUsage.SAMPLED);
         img.create(hmSize.width(), hmSize.height(), VK13.VK_FORMAT_R16_UNORM);
         Attachment attachment = new Attachment(img, false, false);
         Framebuffer fbo = new Framebuffer(attachment);
@@ -86,7 +87,7 @@ public class HMTest1 {
                 new ShaderStageFlags[]{ShaderStageFlags.FRAGMENT},
                 1
         );
-        hmData.setup(ReniSetup.GRAPHICS_CONTEXT);
+        hmData.setup(ReniSetup.GRAPHICS_CONTEXT, true);
         // === Create Shader ===
         HeightmapShader shader = new HeightmapShader(
                 heightmapPass,
@@ -139,7 +140,7 @@ public class HMTest1 {
         shaders.TERRAIN_HEIGHTMAP.prepare();
         shaders.TERRAIN_HEIGHTMAP.bind(state);
         state.depthTest(true).depthMask(true);
-        state.setTopology(PrimitiveType.TRIANGLE);
+        state.setTopology(PrimitiveType.PATCH).patchControlPoints(4);
         GraphicsPipeline pipeline1 = new GraphicsPipeline(pass, state, shaders.TERRAIN_HEIGHTMAP.shaders);
 
         CubePrimitive cube = new CubePrimitive(
@@ -147,13 +148,13 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        int GRID = 1;
-        QuadGrid quad = new QuadGrid(
+        int GRID = 2;
+        QuadPointGrid quad = new QuadPointGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
-                GRID, GRID
+                GRID, GRID, false
         );
-        GRID = 32;
+        GRID *= 32;
 
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
 
@@ -248,8 +249,8 @@ public class HMTest1 {
                 cmd.transition(
                         img.getHandle(),
                         StageMask.COLOR_ATTACHMENT_OUTPUT, StageMask.GRAPHICS,
-                        ImageLayout.TRANSFER_DST_OPTIMAL, ImageLayout.SHADER_READONLY,
-                        AccessMask.TRANSFER_WRITE, AccessMask.SHADER_READ
+                        ImageLayout.COLOR_ATTACHMENT_OPTIMAL, ImageLayout.SHADER_READONLY,
+                        AccessMask.COLOR_WRITE, AccessMask.SHADER_READ
                 );
 
                 cmd.end();

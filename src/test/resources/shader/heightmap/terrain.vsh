@@ -1,16 +1,13 @@
 #version 450
 
 // ======= OUTPUT DATA =======
-layout (location = 0) out vec3 wsCoord;
-layout (location = 1) out vec3 normal;
-layout (location = 2) out vec2 uv;
+layout (location = 0) out vec2 uv;
 
 // ======= UNIFORMS =======
 layout (binding = 0) uniform Matrices {
     uniform mat4 projectionMatrix;
     uniform mat4 modelViewMatrix;
 };
-
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
 //layout (binding = 1) uniform HeightmapData {
@@ -20,8 +17,6 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
 // heightmap
 #include <shader/heightmap/sample_hm.glsl>
-
-#define GRID 32
 
 void main() {
     const mat4 modelRotation = mat4(mat3(modelViewMatrix));
@@ -43,11 +38,11 @@ void main() {
     vec2 POffset = vec2(x, y) * GRID;
 
     // calculate UV
-    uint vX = gl_VertexIndex / (1 + 1);
-    uint vY = gl_VertexIndex % (1 + 1);
+    uint vX = gl_VertexIndex / (VERT + 1);
+    uint vY = gl_VertexIndex % (VERT + 1);
     vec2 UV = vec2(
-        vX / float(GRID),
-        vY / float(GRID)
+        vX / float(GRID * VERT),
+        vY / float(GRID * VERT)
     ) * GRID;
 
     // calculate vertex position information
@@ -58,7 +53,7 @@ void main() {
 
 
     vec4 vPos = vec4(POffset.x, 0, POffset.y, 1) + VPosition;
-    vPos.xz *= 4.;
+    vPos.xz *= VERT_SCALE;
 
     // calculate scaled UV
     vec2 sUV = UV * (GRID / tSizeF);
@@ -67,7 +62,5 @@ void main() {
     float height = sampleHm(uv);
     vPos.y += height;
 
-    gl_Position = projectionMatrix * modelViewMatrix * vPos;
-    wsCoord = vPos.xyz;
-    // TODO: calculate normal... or should that be part of the job of the fragment shader?
+    gl_Position = vPos;
 }

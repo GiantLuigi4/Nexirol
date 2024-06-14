@@ -2,8 +2,7 @@
 #extension GL_EXT_shader_explicit_arithmetic_types: enable
 
 layout (location = 0) in vec3 wsCoord;
-layout (location = 1) in vec3 normalV;
-layout (location = 2) in vec2 uv;
+layout (location = 1) in vec2 uv;
 
 layout (location = 0) out vec4 colorOut;
 layout (location = 1) out vec4 normalOut;
@@ -47,10 +46,10 @@ vec3 crd(vec2 centre, vec2 offset) {
         float(tSize.y)
     );
 
-    return wsCoord * vec3(0, 1, 0) + vec3(
-        offset.x * 4.,
+    return wsCoord * vec3(1, 0, 1) + vec3(
+        offset.x * 2.0,
         sampleHm(centre + (offset * texel)),
-        offset.y * 4.
+        offset.y * 2.0
     );
 }
 
@@ -68,6 +67,10 @@ void main() {
     if (normalUR.y < 0) normalUR.y *= -1;
     if (normalDL.y < 0) normalDL.y *= -1;
     vec3 normal = normalize(normalUR);
+
+//    if (wsCoord.y > crd(uv, vec2(0, 0)).y) {
+//        discard;
+//    }
 
     normalOut = vec4(normal, 1.0);
 
