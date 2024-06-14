@@ -34,39 +34,40 @@ void main() {
 
         const mat4 modelRotation = mat4(mat3(modelViewMatrix));
         vec4 offset = modelViewMatrix * vec4(0, 0, 0, 1);
+        offset.y = 0;
 
         // ----------------------------------------------------------------------
-        vec4 eyeSpacePos00 = (modelRotation * gl_in[0].gl_Position) + offset;
-        vec4 eyeSpacePos01 = (modelRotation * gl_in[1].gl_Position) + offset;
-        vec4 eyeSpacePos10 = (modelRotation * gl_in[2].gl_Position) + offset;
-        vec4 eyeSpacePos11 = (modelRotation * gl_in[3].gl_Position) + offset;
+        const vec4 eyeSpacePos00 = (modelRotation * gl_in[0].gl_Position) + offset;
+        const vec4 eyeSpacePos01 = (modelRotation * gl_in[1].gl_Position) + offset;
+        const vec4 eyeSpacePos10 = (modelRotation * gl_in[2].gl_Position) + offset;
+        const vec4 eyeSpacePos11 = (modelRotation * gl_in[3].gl_Position) + offset;
 
         // ----------------------------------------------------------------------
         // calculate horizontal distance of vertex
-        float distance00 = clamp((abs(length(eyeSpacePos00.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
-        float distance01 = clamp((abs(length(eyeSpacePos01.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
-        float distance10 = clamp((abs(length(eyeSpacePos10.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
-        float distance11 = clamp((abs(length(eyeSpacePos11.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        const float distance00 = clamp((abs(length(eyeSpacePos00.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        const float distance01 = clamp((abs(length(eyeSpacePos01.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        const float distance10 = clamp((abs(length(eyeSpacePos10.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        const float distance11 = clamp((abs(length(eyeSpacePos11.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
 
         // ----------------------------------------------------------------------
         // calculate edge tesselation levels using some simple interpolation
         // clamp to the tesselation levels, because elsewise this will reach 0
-        float tessLevel0 = clamp(
+        const float tessLevel0 = clamp(
             mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00)),
             MIN_TESS_LEVEL,
             MAX_TESS_LEVEL
         );
-        float tessLevel1 = clamp(
+        const float tessLevel1 = clamp(
             mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance00, distance01)),
             MIN_TESS_LEVEL,
             MAX_TESS_LEVEL
         );
-        float tessLevel2 = clamp(
+        const float tessLevel2 = clamp(
             mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance01, distance11)),
             MIN_TESS_LEVEL,
             MAX_TESS_LEVEL
         );
-        float tessLevel3 = clamp(
+        const float tessLevel3 = clamp(
             mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance11, distance10)),
             MIN_TESS_LEVEL,
             MAX_TESS_LEVEL

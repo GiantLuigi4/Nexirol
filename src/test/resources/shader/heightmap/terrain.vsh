@@ -21,26 +21,26 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 void main() {
     const mat4 modelRotation = mat4(mat3(modelViewMatrix));
 
-    ivec2 tSize = textureSize(heightmapSampler, 0);
-    vec2 tSizeF = vec2(
+    const ivec2 tSize = textureSize(heightmapSampler, 0);
+    const vec2 tSizeF = vec2(
         float(tSize.x),
         float(tSize.y)
     );
 
     // calculate instance position information
-    int sizeX = tSize.x / GRID;
-    int sizeY = tSize.y / GRID;
+    const int sizeX = tSize.x / GRID;
+    const int sizeY = tSize.y / GRID;
     int x = gl_InstanceIndex / sizeX;
     int y = gl_InstanceIndex % sizeX;
-    vec2 UVOffset = vec2(x, y);
+    const vec2 UVOffset = vec2(x, y);
     x -= sizeX / 2;
     y -= sizeY / 2;
-    vec2 POffset = vec2(x, y) * GRID;
+    const vec2 POffset = vec2(x, y) * GRID;
 
     // calculate UV
-    uint vX = gl_VertexIndex / (VERT + 1);
-    uint vY = gl_VertexIndex % (VERT + 1);
-    vec2 UV = vec2(
+    const uint vX = gl_VertexIndex / (VERT + 1);
+    const uint vY = gl_VertexIndex % (VERT + 1);
+    const vec2 UV = vec2(
         vX / float(GRID * VERT),
         vY / float(GRID * VERT)
     ) * GRID;
@@ -56,10 +56,10 @@ void main() {
     vPos.xz *= VERT_SCALE;
 
     // calculate scaled UV
-    vec2 sUV = UV * (GRID / tSizeF);
+    const vec2 sUV = UV * (GRID / tSizeF);
     uv = (UVOffset / tSizeF * GRID) + sUV;
 
-    float height = sampleHm(uv);
+    const float height = sampleHm(uv);
     vPos.y += height;
 
     gl_Position = vPos;

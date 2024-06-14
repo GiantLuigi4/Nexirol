@@ -26,16 +26,16 @@ layout (location = 1) out vec2 uvOut;
 
 void main() {
     // get patch coordinate
-    float u = gl_TessCoord.x;
-    float v = gl_TessCoord.y;
-    vec2 uvC = vec2(u, v);
+    const float u = gl_TessCoord.x;
+    const float v = gl_TessCoord.y;
+    const vec2 uvC = vec2(u, v);
 
     // ======= CONTROL POINTS =======
     // retrieve control point position coordinates
-    vec3 p00 = gl_in[0].gl_Position.xyz;
-    vec3 p01 = gl_in[1].gl_Position.xyz;
-    vec3 p10 = gl_in[2].gl_Position.xyz;
-    vec3 p11 = gl_in[3].gl_Position.xyz;
+    const vec3 p00 = gl_in[0].gl_Position.xyz;
+    const vec3 p01 = gl_in[1].gl_Position.xyz;
+    const vec3 p10 = gl_in[2].gl_Position.xyz;
+    const vec3 p11 = gl_in[3].gl_Position.xyz;
 
     // ======= POSITION =======
     vec4 p = vec4(lerp(
@@ -44,13 +44,9 @@ void main() {
         uvC
     ), 1);
 
-    vec2 uv00 = uv[0];
-    vec2 uv01 = uv[1];
-    vec2 uv10 = uv[2];
-    vec2 uv11 = uv[3];
-    vec2 uvLerp = lerp(
-        uv00, uv10,
-        uv01, uv11,
+    const vec2 uvLerp = lerp(
+        uv[0], uv[2],
+        uv[1], uv[3],
         uvC
     );
     p.y += sampleHm(uvLerp);

@@ -59,8 +59,8 @@ void main() {
         crd(uv, vec2(1, 0)),
         crd(uv, vec2(0, 1))
     );
-    if (normalUR.y < 0) normalUR.y *= -1;
-    vec3 normal = normalize(normalUR);
+    normalUR.y = abs(normalUR.y);
+    const vec3 normal = normalize(normalUR);
 
     normalOut = vec4(normal, 1.0);
 

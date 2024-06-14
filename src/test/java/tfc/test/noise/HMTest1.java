@@ -69,6 +69,7 @@ public class HMTest1 {
         hmSize.set(2048 * 3, 2048 * 3);
 //        hmSize.set(256 * 4, 256 * 4);
 //        hmSize.set(64 * 64, 64 * 64);
+//        hmSize.set(64 * 64, 64 * 64);
         // === Setup Heightmap FBO ===
         Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
         img.setUsage(SwapchainUsage.COLOR, SwapchainUsage.SAMPLED);
