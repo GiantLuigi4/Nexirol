@@ -55,22 +55,12 @@ vec3 crd(vec2 centre, vec2 offset) {
 
 void main() {
     vec3 normalUR = calculateNormal(
-        crd(uv, vec2(0, 0)),
+        crd(uv, vec2(0)),
         crd(uv, vec2(1, 0)),
         crd(uv, vec2(0, 1))
     );
-    vec3 normalDL = calculateNormal(
-        crd(uv, -vec2(0, 0)),
-        crd(uv, -vec2(1, 0)),
-        crd(uv, -vec2(0, 1))
-    );
     if (normalUR.y < 0) normalUR.y *= -1;
-    if (normalDL.y < 0) normalDL.y *= -1;
     vec3 normal = normalize(normalUR);
-
-//    if (wsCoord.y > crd(uv, vec2(0, 0)).y) {
-//        discard;
-//    }
 
     normalOut = vec4(normal, 1.0);
 
@@ -80,9 +70,6 @@ void main() {
     //float dAdd = distance(wsCoord.xyz, constantVec);
     float dAdd = 0.;
 
-    //Rand rand = Rand(22217711, 32024818);
-    //rand = randFor(rand, round(wsCoord.x), round(wsCoord.y), round(wsCoord.z));
-    //float nz = nextFloat(rand);
     float nz = rand(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128));
     vec4 color;
     if (sin(normal.y) > 0.5) {

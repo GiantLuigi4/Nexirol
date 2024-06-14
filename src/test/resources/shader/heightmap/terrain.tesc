@@ -1,5 +1,7 @@
 #version 450
 
+// https://learnopengl.com/Guest-Articles/2021/Tessellation/Tessellation
+
 in gl_PerVertex {
     vec4 gl_Position;
     float gl_PointSize;
@@ -25,29 +27,30 @@ void main() {
 
     // ======= TESSELATION LEVEL =======
     if (gl_InvocationID == 0) {
-        const float MIN_TESS_LEVEL = 4;
+        const float MIN_TESS_LEVEL = 2;
         const float MAX_TESS_LEVEL = 32;
         const float MIN_DISTANCE = 64;
-        const float MAX_DISTANCE = 256 * 2;
+        const float MAX_DISTANCE = 1024 * 2;
 
-        const mat4 modelRotation = modelViewMatrix;
-
-        // ----------------------------------------------------------------------
-        // Step 2: transform each vertex into eye space
-        vec4 eyeSpacePos00 = modelRotation * gl_in[0].gl_Position;
-        vec4 eyeSpacePos01 = modelRotation * gl_in[1].gl_Position;
-        vec4 eyeSpacePos10 = modelRotation * gl_in[2].gl_Position;
-        vec4 eyeSpacePos11 = modelRotation * gl_in[3].gl_Position;
+        const mat4 modelRotation = mat4(mat3(modelViewMatrix));
+        vec4 offset = modelViewMatrix * vec4(0, 0, 0, 1);
 
         // ----------------------------------------------------------------------
-        // Step 3: "distance" from camera scaled between 0 and 1
+        vec4 eyeSpacePos00 = (modelRotation * gl_in[0].gl_Position) + offset;
+        vec4 eyeSpacePos01 = (modelRotation * gl_in[1].gl_Position) + offset;
+        vec4 eyeSpacePos10 = (modelRotation * gl_in[2].gl_Position) + offset;
+        vec4 eyeSpacePos11 = (modelRotation * gl_in[3].gl_Position) + offset;
+
+        // ----------------------------------------------------------------------
+        // calculate horizontal distance of vertex
         float distance00 = clamp((abs(length(eyeSpacePos00.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
         float distance01 = clamp((abs(length(eyeSpacePos01.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
         float distance10 = clamp((abs(length(eyeSpacePos10.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
         float distance11 = clamp((abs(length(eyeSpacePos11.xz)) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
 
         // ----------------------------------------------------------------------
-        // Step 4: interpolate edge tessellation level based on closer vertex
+        // calculate edge tesselation levels using some simple interpolation
+        // clamp to the tesselation levels, because elsewise this will reach 0
         float tessLevel0 = clamp(
             mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00)),
             MIN_TESS_LEVEL,
@@ -70,14 +73,12 @@ void main() {
         );
 
         // ----------------------------------------------------------------------
-        // Step 5: set the corresponding outer edge tessellation levels
+        // and set
         gl_TessLevelOuter[0] = tessLevel0;
         gl_TessLevelOuter[1] = tessLevel1;
         gl_TessLevelOuter[2] = tessLevel2;
         gl_TessLevelOuter[3] = tessLevel3;
 
-        // ----------------------------------------------------------------------
-        // Step 6: set the inner tessellation levels to the max of the two parallel edges
         gl_TessLevelInner[0] = max(tessLevel1, tessLevel3);
         gl_TessLevelInner[1] = max(tessLevel0, tessLevel2);
     }
