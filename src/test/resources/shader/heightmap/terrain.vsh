@@ -20,6 +20,7 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 #undef EXCLUDE_SAMPLE
 
 const float iVert = 1. / VERT;
+const int V1 = VERT + 1;
 
 void main() {
     const ivec2 tSize = textureSize(heightmapSampler, 0);
@@ -35,17 +36,15 @@ void main() {
 
     // calculate UV
     const vec2 UV = vec2(
-        gl_VertexIndex / (VERT + 1),
-        gl_VertexIndex % (VERT + 1)
+        gl_VertexIndex / V1,
+        gl_VertexIndex % V1
     ) * iVert;
 
     // calculate scaled UV
     uv = (xy + UV) * iTSF * GRID;
 
     // calculate vertex position information
-    const vec4 VPosition = vec4(vec3(UV.x, 0, UV.y) * GRID, 1);
-    vec4 vPos = vec4(POffset.x, 0, POffset.y, 1) + VPosition;
-    vPos.xz *= VERT_SCALE;
+    const vec4 vPos = vec4((UV * GRID + POffset).xy * VERT_SCALE, 0.0, 1.0).xzyw;
     //const float height = sampleHm(uv);
     //vPos.y = height;
 

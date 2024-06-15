@@ -32,9 +32,12 @@ void main() {
         const float MAX_TESS_LEVEL = 64;
         const float MIN_DISTANCE = 64;
         const float MAX_DISTANCE = 2048 * 2;
+        const float mm = MAX_DISTANCE - MIN_DISTANCE;
 
-        const mat3 modelRotation = mat3(modelViewMatrix);
-        const vec3 offset = inverse(modelRotation) * (modelViewMatrix * vec4(0, 0, 0, 1)).xyz;
+        //const mat3 modelRotation = mat3(modelViewMatrix);
+        //const vec3 offset = inverse(modelRotation) * (modelViewMatrix * vec4(0, 0, 0, 1)).xyz;
+        // not sure why this works, so I'm keeping the old code as a comment above ^
+        const vec3 offset = -(inverse(modelViewMatrix) * vec4(0, 0, 0, 1)).xyz;
 
         // ----------------------------------------------------------------------
         const vec3 eyeSpacePos00 = gl_in[0].gl_Position.xyz + offset;
@@ -44,7 +47,6 @@ void main() {
 
         // ----------------------------------------------------------------------
         // calculate horizontal distance of vertex
-        const float mm = MAX_DISTANCE - MIN_DISTANCE;
         const float distance00 = clamp((abs(length(eyeSpacePos00.xyz)) - MIN_DISTANCE) / mm, 0.0, 1.0);
         const float distance01 = clamp((abs(length(eyeSpacePos01.xyz)) - MIN_DISTANCE) / mm, 0.0, 1.0);
         const float distance10 = clamp((abs(length(eyeSpacePos10.xyz)) - MIN_DISTANCE) / mm, 0.0, 1.0);

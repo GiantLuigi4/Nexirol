@@ -35,9 +35,9 @@ const vec3 v101 = vec3(1, 0, 1);
 
 vec3 crd(vec2 texel, vec2 centre, vec2 offset) {
     return wsCoord * v101 + vec3(
-        offset.x * 2.0,
+        offset.x,
         sampleHm(centre + (offset * texel)),
-        offset.y * 2.0
+        offset.y
     );
 }
 
@@ -54,12 +54,12 @@ void main() {
     vec3 normalUR = calculateNormal(
         //wsCoord,
         crd(texel, uv, vec2(0)),
-        crd(texel, uv, vec2(1, 0)),
-        crd(texel, uv, vec2(0, 1))
+        crd(texel, uv, vec2(2, 0)),
+        crd(texel, uv, vec2(0, 2))
     );
+
     normalUR.y = abs(normalUR.y);
     const vec3 normal = normalize(normalUR);
-
     normalOut = vec4(normal, 1.0);
 
     const float amt = dot(normal, constantVecNormalized);
@@ -67,11 +67,13 @@ void main() {
 
     const float nz = rand(mod(mod(round(wsCoord.xz), 64.0) + round(wsCoord.xz / 3.), 128));
     const float sinValue = sin(normal.y);
+
     const vec4 grassColor = vec4((1 - nz) / 8, nz / 2 + 0.5, nz / 8, 1);
     const vec4 stoneColor = vec4(nz.xxx, 1);
 
-    colorOut = mix(stoneColor, grassColor, step(0.5, sinValue));
-    const vec4 color = mix(stoneGray, grassGreen, step(0.5, sinValue));
+    const float sv = step(0.5, sinValue);
+    colorOut = mix(stoneColor, grassColor, sv);
+    const vec4 color = mix(stoneGray, grassGreen, sv);
 
     colorOut *= color;
     colorOut = colorOut * vec4((amt * (1 - (dAdd / 1000.))).xxx, 1.);
