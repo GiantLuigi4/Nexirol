@@ -23,6 +23,14 @@ public class Heightmap implements ReniDestructable {
 
     int cx, cy;
 
+    public int getCx() {
+        return cx;
+    }
+
+    public int getCy() {
+        return cy;
+    }
+
     public Heightmap(
             HeightmapShader shader,
             int width, int height,
@@ -88,6 +96,57 @@ public class Heightmap implements ReniDestructable {
     }
 
     public void updatePosition(CommandBuffer cmd, int centerX, int centerY) {
-        // TODO
+        int cDiffX = centerX - cx;
+        int cDiffY = centerY - cy;
+        if (cDiffX == 0 && cDiffY == 0) return;
+
+        shader.beginCompute(cmd, fbo, hmSize);
+
+        int regStartX = ((hmSize.width()) + cx) % hmSize.width();
+        int regEndX = ((hmSize.width()) + cx + cDiffX) % hmSize.width();
+
+        if (cDiffX < 0) {
+            int temp = regStartX;
+            regStartX = regEndX;
+            regEndX = temp;
+        }
+
+        if (regStartX < 0) regStartX += hmSize.width();
+        if (regEndX < 0) regEndX += hmSize.width();
+        if (regEndX == 0) regEndX = hmSize.width();
+
+        int regStartY = ((hmSize.height()) + cy) % hmSize.height();
+        int regEndY = ((hmSize.height()) + cy + cDiffY) % hmSize.height();
+
+        if (cDiffY < 0) {
+            int temp = regStartY;
+            regStartY = regEndY;
+            regEndY = temp;
+        }
+
+        if (regStartY < 0) regStartY += hmSize.height();
+        if (regEndY < 0) regEndY += hmSize.height();
+        if (regEndY == 0) regEndY = hmSize.height();
+
+        if (cDiffX > 0) {
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + hmSize.width(), 0,
+                    regStartX, 0,
+                    regEndX - regStartX, hmSize.height()
+            );
+        } else if (cDiffX < 0) {
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + cDiffX, 0,
+                    regStartX, 0,
+                    regEndX - regStartX, hmSize.height()
+            );
+        }
+
+        shader.finishCompute(cmd);
+
+        cx = centerX;
+        cy = centerY;
     }
 }

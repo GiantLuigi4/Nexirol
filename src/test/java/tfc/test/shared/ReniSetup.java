@@ -1,6 +1,9 @@
 package tfc.test.shared;
 
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.EXTDebugUtils;
+import org.lwjgl.vulkan.KHRSurface;
+import org.lwjgl.vulkan.KHRSwapchain;
+import org.lwjgl.vulkan.VK13;
 import tfc.renirol.ReniContext;
 import tfc.renirol.Renirol;
 import tfc.renirol.backend.vk.util.VkUtil;
@@ -65,11 +68,16 @@ public class ReniSetup {
                                 ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER
                         ))
                         .require(ReniHardwareCapability.DYNAMIC_RENDERNING)
-                        .reniRecommended()
+                        .require(ReniHardwareCapability.SWAPCHAIN)
+                        .require(ReniHardwareCapability.INSTANCING)
+                        .require(ReniHardwareCapability.TESSELATION_SHADER)
                         // if any integrated GPU meets the requirements, then filter out any non-dedicated GPU
+                        .prioritizeDedicated()
+                        // it can be useful to switch to the integrated GPU for testing purposes, especially if your iGPU is a different brand than your dGPU
 //                        .prioritizeIntegrated()
                         // low-importance features
                         .request(100, ReniHardwareCapability.SUPPORTS_INDICES.configured(ReniQueueType.COMPUTE))
+                        .request(1000, ReniHardwareCapability.MESH_SHADER)
                         // microsoft seems to emulate GPUs with "Dozen" being the driver name, and these are kinda horrible at functioning
                         // so filter those out if possible
                         .request(-2000, device -> device.getDriverName().toString().contains("Dozen"))
@@ -78,10 +86,9 @@ public class ReniSetup {
         GRAPHICS_CONTEXT.withLogical(
                 Scenario.configureDevice(
                         GRAPHICS_CONTEXT.getHardware().createLogical()
-                                .enableIfPossible(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
-                                .enableIfPossible(NVLowLatency.VK_NV_LOW_LATENCY_EXTENSION_NAME)
-                                // TODO: should probably support tfc.test.shared pairs
-                                // i.e. split(tfc.test.shared(GRAPHICS, TRANSFER), tfc.test.shared(COMPUTE, TRANSFER))
+                                .enable(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+                                // TODO: should probably support shared pairs
+                                // i.e. split(shared(GRAPHICS, TRANSFER), shared(COMPUTE, TRANSFER))
                                 .requestSharedIndices(
                                         // if compute pipeline is supported, then use it
                                         // elsewise, do not

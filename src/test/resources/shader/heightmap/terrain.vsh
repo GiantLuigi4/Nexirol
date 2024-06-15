@@ -31,7 +31,10 @@ void main() {
     const ivec2 xy = (vSize - ivec2(
         gl_InstanceIndex / vSize.x,
         gl_InstanceIndex % vSize.x
-    )) % vSize;
+    )) % vSize + ivec2(
+        int(PositionOffset.x / (GRID)),
+        int(PositionOffset.y / (GRID))
+    );
     const vec2 POffset = (xy - vSize * 0.5) * GRID;
 
     // calculate UV

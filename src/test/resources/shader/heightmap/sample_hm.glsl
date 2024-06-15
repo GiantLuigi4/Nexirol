@@ -1,4 +1,4 @@
-#define VERT 8
+#define VERT 4
 #define GRID (64*VERT)
 #define VERT_SCALE 3.0
 

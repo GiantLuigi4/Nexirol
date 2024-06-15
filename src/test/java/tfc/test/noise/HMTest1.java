@@ -84,6 +84,7 @@ public class HMTest1 {
         int res = 2048 * 3;
 //        int res = 256 * 4;
 //        int res = 64 * 64;
+//        int res = 1024;
         Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
         img.setUsage(SwapchainUsage.COLOR, SwapchainUsage.SAMPLED);
         img.create(res, res, VK13.VK_FORMAT_R16_UNORM);
@@ -106,7 +107,7 @@ public class HMTest1 {
                 img, fbo, heightmapPass
         );
         TextureSampler sampler = map.createSampler(
-                WrapMode.CLAMP, WrapMode.CLAMP,
+                WrapMode.REPEAT, WrapMode.REPEAT,
                 FilterMode.NEAREST, FilterMode.LINEAR,
                 MipmapMode.NEAREST,
                 false, 0,
@@ -153,7 +154,7 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        int GRID = 8;
+        int GRID = 4;
         QuadPointGrid quad = new QuadPointGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
@@ -277,6 +278,9 @@ public class HMTest1 {
                 forward.y = -forward.y;
                 right.y = -right.y;
 
+                forward.mul(100);
+                right.mul(100);
+
                 if (inputStates[0]) cameraPos.add(forward);
                 if (inputStates[1]) cameraPos.sub(forward);
                 if (inputStates[2]) cameraPos.sub(right);
@@ -286,11 +290,10 @@ public class HMTest1 {
 
                 {
                     UniformData matrices = Shaders.matrices;
-
                     matrices.setF(0, Matrices.projection(
                             (float) Math.toRadians(45),
                             ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(),
-                            0.1f, 10000.0f
+                            0.1f, 20000.0f
                     ));
 
                     Matrix4f view = new Matrix4f();
@@ -331,7 +334,7 @@ public class HMTest1 {
                     skyData.upload();
                 }
 
-                Shaders.heightmapData.setF(0, 0, 0);
+                Shaders.heightmapData.setF(0, map.getCx(), 0);
                 Shaders.heightmapData.setF(1, -1000, 4000);
                 Shaders.heightmapData.upload();
 
@@ -342,8 +345,8 @@ public class HMTest1 {
 
                 map.updatePosition(
                         buffer,
-                        (int) (cameraPos.x / (16 * 3)) * 16 * 3,
-                        (int) (cameraPos.z / (16 * 3)) * 16 * 3
+                        (int) (cameraPos.x / (GRID * 3)) * GRID,
+                        (int) (cameraPos.z / (GRID * 3)) * GRID
                 );
 
                 buffer.transition(
