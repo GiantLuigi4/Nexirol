@@ -2,6 +2,7 @@ package tfc.test.noise.hm;
 
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.renirol.frontend.enums.Operation;
+import tfc.renirol.frontend.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.enums.modes.image.FilterMode;
 import tfc.renirol.frontend.enums.modes.image.MipmapMode;
 import tfc.renirol.frontend.enums.modes.image.WrapMode;
@@ -17,7 +18,10 @@ public class Heightmap implements ReniDestructable {
     final VkExtent2D hmSize;
     final Framebuffer fbo;
     final Image img;
+    final Image imgTmp;
     final RenderPassInfo pass;
+
+    int cx, cy;
 
     public Heightmap(
             HeightmapShader shader,
@@ -42,6 +46,11 @@ public class Heightmap implements ReniDestructable {
         this.img = img;
         this.fbo = fbo;
         this.pass = pass;
+        imgTmp = new Image(shader.device).setUsage(SwapchainUsage.COLOR);
+        imgTmp.create(
+                img.getExtents().width(), img.getExtents().height(),
+                img.getFormat()
+        );
     }
 
     public TextureSampler createSampler(
@@ -66,6 +75,8 @@ public class Heightmap implements ReniDestructable {
     }
 
     public void prepare(CommandBuffer cmd, int centerX, int centerY) {
+        cx = centerX;
+        cy = centerY;
         shader.beginCompute(cmd, fbo, hmSize);
         shader.computeNoise(
                 cmd,
@@ -74,5 +85,9 @@ public class Heightmap implements ReniDestructable {
                 hmSize.width(), hmSize.height()
         );
         shader.finishCompute(cmd);
+    }
+
+    public void updatePosition(CommandBuffer cmd, int centerX, int centerY) {
+        // TODO
     }
 }

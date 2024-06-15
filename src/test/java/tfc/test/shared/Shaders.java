@@ -95,6 +95,24 @@ public class Shaders {
             1
     );
 
+    public static final UniformData heightmapData = new UniformData(
+            false, DataLayout.STANDARD,
+            new DataFormat(
+                    new DataElement(
+                            NumericPrimitive.FLOAT,
+                            2
+                    ),
+                    new DataElement(
+                            NumericPrimitive.FLOAT,
+                            2
+                    )
+            ),
+            new ShaderStageFlags[]{
+                    ShaderStageFlags.VERTEX, ShaderStageFlags.TESSELATION_EVALUATION, ShaderStageFlags.FRAGMENT
+            },
+            1
+    );
+
     public static final UniformData terrainTextureData = new UniformData(
             false, DataLayout.COMBINED_TEXTURE_SAMPLER,
             new DataFormat(
@@ -127,6 +145,7 @@ public class Shaders {
         matrices.setup(ReniSetup.GRAPHICS_CONTEXT);
         skyData.setup(ReniSetup.GRAPHICS_CONTEXT);
         cubeInstanceData.setup(ReniSetup.GRAPHICS_CONTEXT);
+        heightmapData.setup(ReniSetup.GRAPHICS_CONTEXT);
         terrainTextureData.setup(ReniSetup.GRAPHICS_CONTEXT);
 
         cubeInstanceData.getDescriptor().attribute(1, 2, AttributeFormat.RGB32_FLOAT, 0);
@@ -223,7 +242,7 @@ public class Shaders {
                                 "terrain_tesc", "main"
                         )
                 },
-                matrices,
+                matrices, heightmapData,
                 terrainTextureData
         );
         CUBE = new SmartShader(
@@ -265,5 +284,7 @@ public class Shaders {
         matrices.destroy();
         skyData.destroy();
         cubeInstanceData.destroy();
+        heightmapData.destroy();
+        terrainTextureData.destroy();
     }
 }

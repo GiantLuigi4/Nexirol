@@ -49,6 +49,9 @@ public class HeightmapShader implements ReniDestructable {
 
     @Override
     public void destroy() {
+        for (ShaderAttachment shaderAttachment : attachmentsNoise) shaderAttachment.destroy();
+        for (ShaderAttachment shaderAttachment : attachmentsBlit) shaderAttachment.destroy();
+        quad.destroy();
         noisePipe.destroy();
         noiseShader.destroy();
         blitPipe.destroy();
@@ -94,6 +97,9 @@ public class HeightmapShader implements ReniDestructable {
             0
     );
 
+    final ShaderAttachment[] attachmentsNoise;
+    final ShaderAttachment[] attachmentsBlit;
+
     public HeightmapShader(
             RenderPassInfo compatiblePass,
             ReniContext context,
@@ -122,7 +128,7 @@ public class HeightmapShader implements ReniDestructable {
         PreProcessor def;
         noiseShader = new SmartShader(
                 logical,
-                new ShaderAttachment[]{
+                attachmentsNoise = new ShaderAttachment[]{
                         new ShaderAttachment(
                                 new SequenceProcessor(
                                         processor, def = new InsertDefineProcessor("NOISE")
@@ -144,7 +150,7 @@ public class HeightmapShader implements ReniDestructable {
         noiseShader.prepare();
         blitShader = new SmartShader(
                 logical,
-                new ShaderAttachment[]{
+                attachmentsBlit = new ShaderAttachment[]{
                         new ShaderAttachment(
                                 new SequenceProcessor(
                                         processor, def = new InsertDefineProcessor("NOISE")

@@ -331,10 +331,20 @@ public class HMTest1 {
                     skyData.upload();
                 }
 
+                Shaders.heightmapData.setF(0, 0, 0);
+                Shaders.heightmapData.setF(1, -1000, 4000);
+                Shaders.heightmapData.upload();
+
                 ReniSetup.GRAPHICS_CONTEXT.prepareFrame(ReniSetup.WINDOW);
                 extent2D[0] = ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents();
 
                 buffer.begin();
+
+                map.updatePosition(
+                        buffer,
+                        (int) (cameraPos.x / (16 * 3)) * 16 * 3,
+                        (int) (cameraPos.z / (16 * 3)) * 16 * 3
+                );
 
                 buffer.transition(
                         ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
@@ -428,10 +438,10 @@ public class HMTest1 {
         }
 
         // destroy heightmap
+        hmData.destroy();
         img.destroy();
         if (fbo instanceof ReniDestructable destructable)
             destructable.destroy();
-        img.destroy();
         pass.destroy();
         sampler.destroy();
         map.destroy();

@@ -33,6 +33,7 @@ public class UniformData implements ReniDestructable {
 
     GPUBuffer buffer;
     ByteBuffer bytes;
+    AccessMask mask;
 
     record IndexedElement(int memoryOffset, DataElement element) {
 
@@ -112,6 +113,11 @@ public class UniformData implements ReniDestructable {
                 }
             }
         }
+        switch (layout) {
+            case VERTEX, INSTANCE -> mask = AccessMask.VERTEX_READ;
+            case COMBINED_TEXTURE_SAMPLER -> mask = null; // no buffer
+            default -> mask = AccessMask.UNIFORM_READ;
+        }
     }
 
     public BufferDescriptor getDescriptor() {
@@ -131,6 +137,9 @@ public class UniformData implements ReniDestructable {
     }
 
     public void setup(ReniContext context, boolean transfer) {
+        if (mask == null)
+            return;
+
         if (info != null || descriptor != null) {
             BufferUsage usage = transfer ? BufferUsage.UNIFORM_TRANSFER : BufferUsage.UNIFORM;
             if (descriptor != null) usage = transfer ? BufferUsage.VERTEX_TRANSFER : BufferUsage.VERTEX;
@@ -316,7 +325,7 @@ public class UniformData implements ReniDestructable {
             buffer.bufferBarrier(
                     this.buffer,
                     StageMask.GRAPHICS, StageMask.TRANSFER,
-                    AccessMask.VERTEX_READ, AccessMask.TRANSFER_WRITE
+                    mask, AccessMask.TRANSFER_WRITE
             );
             buffer.bufferData(
                     this.buffer, ulStart,
@@ -325,7 +334,7 @@ public class UniformData implements ReniDestructable {
             buffer.bufferBarrier(
                     this.buffer,
                     StageMask.TRANSFER, StageMask.GRAPHICS,
-                    AccessMask.TRANSFER_WRITE, AccessMask.VERTEX_READ
+                    AccessMask.TRANSFER_WRITE, mask
             );
             ulStart = Integer.MAX_VALUE;
             ulEnd = 0;
@@ -339,7 +348,9 @@ public class UniformData implements ReniDestructable {
             descriptor.destroy();
         if (info != null)
             info.destroy();
-        buffer.destroy();
-        MemoryUtil.memFree(bytes);
+        if (buffer != null)
+            buffer.destroy();
+        if (bytes != null)
+            MemoryUtil.memFree(bytes);
     }
 }

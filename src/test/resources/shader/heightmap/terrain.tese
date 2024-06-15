@@ -11,10 +11,10 @@ layout (binding = 0) uniform Matrices {
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
-//layout (binding = 1) uniform HeightmapData {
-//    uniform vec2 UVOffset;
-//    uniform vec2 heightRange;
-//};
+layout (binding = 1) uniform HeightmapData {
+    uniform vec2 PositionOffset;
+    uniform vec2 heightRange;
+};
 
 // ======= INPUT DATA =======
 layout (location = 0) in vec2[] uv;
@@ -31,12 +31,9 @@ layout (location = 1) out vec2 uvOut;
 
 void main() {
     // get patch coordinate
-    const float u = gl_TessCoord.x;
-    const float v = gl_TessCoord.y;
-    const vec2 uvC = vec2(u, v);
+    const vec2 uvC = gl_TessCoord.xy;
 
     // ======= CONTROL POINTS =======
-    // retrieve control point position coordinates
     const vec3 p00 = gl_in[0].gl_Position.xyz;
     const vec3 p01 = gl_in[1].gl_Position.xyz;
     const vec3 p10 = gl_in[2].gl_Position.xyz;
