@@ -95,6 +95,10 @@ public class Heightmap implements ReniDestructable {
         shader.finishCompute(cmd);
     }
 
+    public boolean needsUpdate(int mapX, int mapY) {
+        return mapX != cx || mapY != cy;
+    }
+
     public void updatePosition(CommandBuffer cmd, int centerX, int centerY) {
         int cDiffX = centerX - cx;
         int cDiffY = centerY - cy;

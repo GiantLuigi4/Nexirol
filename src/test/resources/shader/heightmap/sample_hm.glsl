@@ -6,6 +6,7 @@
 float sampleHm(vec2 uv) {
     float height = texture(heightmapSampler, uv).x;
     height = mix(heightRange.x, heightRange.y, height);
+    // TODO: implement clamping
     return height;
 }
 //#endif

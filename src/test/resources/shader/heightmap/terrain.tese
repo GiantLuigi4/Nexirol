@@ -36,17 +36,17 @@ void main() {
     const vec3 p10 = gl_in[2].gl_Position.xyz;
     const vec3 p11 = gl_in[3].gl_Position.xyz;
 
-    // ======= POSITION =======
-    vec3 p = lerp(
-        p00, p10,
-        p01, p11,
-        gl_TessCoord.xy
-    );
-
     // ======= UV =======
     const vec2 uvLerp = lerp(
         uv[0], uv[2],
         uv[1], uv[3],
+        gl_TessCoord.xy
+    );
+
+    // ======= POSITION =======
+    vec3 p = lerp(
+        p00, p10,
+        p01, p11,
         gl_TessCoord.xy
     );
     p.y = sampleHm(uvLerp);

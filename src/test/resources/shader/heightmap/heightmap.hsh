@@ -43,11 +43,11 @@ float heightmap(vec2 pos) {
 //    pos *= 100;
     pos *= 2.0;
 
-    vec2 fp = floor(pos);
+    const vec2 fp = floor(pos);
     if (fp.x == 0 || fp.y == 0) pos += 0.00001;
 
     float nz = perlinNoise(pos / 10000., 8, vec2(23408, 23472));
-    float nz1 = perlinNoise(pos / 20000., 4, vec2(3927423, 7982432));
+    const float nz1 = perlinNoise(pos / 20000., 4, vec2(3927423, 7982432));
     nz += nz1 * 2;
     float v = nz / 3.;
     v = mix(mapMin, mapMax, v);

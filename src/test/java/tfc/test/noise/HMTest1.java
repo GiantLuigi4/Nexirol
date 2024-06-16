@@ -27,6 +27,7 @@ import tfc.renirol.frontend.enums.modes.image.MipmapMode;
 import tfc.renirol.frontend.enums.modes.image.WrapMode;
 import tfc.renirol.frontend.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
+import tfc.renirol.frontend.rendering.ReniQueue;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
@@ -81,7 +82,7 @@ public class HMTest1 {
         hmData.setup(ReniSetup.GRAPHICS_CONTEXT, true);
 
         // === Create Heightmap Image ===
-        int res = 2048 * 3;
+        int res = 2048 * 4;
 //        int res = 256 * 4;
 //        int res = 64 * 64;
 //        int res = 1024;
@@ -230,7 +231,7 @@ public class HMTest1 {
 
                 rV[0] += x;
                 rV[1] -= y;
-                rV[0] = Math.toRadians(45) * 200;
+//                rV[0] = Math.toRadians(45) * 200;
 
                 Quaternionf q = new Quaternionf(0, 0, 0, 1);
                 q.rotateLocalY((float) rV[0] / 200f);
@@ -239,12 +240,12 @@ public class HMTest1 {
                 cameraRotation.normalize();
             });
 
+            CommandBuffer cmd = CommandBuffer.create(
+                    ReniSetup.GRAPHICS_CONTEXT.getLogical(),
+                    ReniQueueType.GRAPHICS, true,
+                    false, false
+            );
             {
-                CommandBuffer cmd = CommandBuffer.create(
-                        ReniSetup.GRAPHICS_CONTEXT.getLogical(),
-                        ReniQueueType.GRAPHICS, true,
-                        false, true
-                );
                 cmd.begin();
 
                 // === Compute Heightmap ===
@@ -261,12 +262,11 @@ public class HMTest1 {
                 );
 
                 cmd.end();
-                cmd.submit(
+                cmd.submitBlocking(
                         ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS),
                         StageMask.GRAPHICS
                 );
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS).await();
-                cmd.destroy();
+                cmd.reset();
             }
 
             while (!ReniSetup.WINDOW.shouldClose()) {
@@ -287,9 +287,6 @@ public class HMTest1 {
                 forward.y = -forward.y;
                 right.y = -right.y;
 
-                forward.mul(100);
-                right.mul(100);
-
                 if (inputStates[0]) cameraPos.add(forward);
                 if (inputStates[1]) cameraPos.sub(forward);
                 if (inputStates[2]) cameraPos.sub(right);
@@ -297,10 +294,12 @@ public class HMTest1 {
                 if (inputStates[4]) cameraPos.y += 1.0f;
                 if (inputStates[5]) cameraPos.y -= 1.0f;
 
-                if (inputStates[6]) cameraPos.add(256 * 3, 0, 256 * 3);
-                if (inputStates[7]) cameraPos.add(256 * 3, 0, -256 * 3);
-                if (inputStates[8]) cameraPos.add(-256 * 3, 0, -256 * 3);
-                if (inputStates[9]) cameraPos.add(-256 * 3, 0, 256 * 3);
+                for (int i = 0; i < 100; i++) {
+                    if (inputStates[6]) cameraPos.add(256 * 3, 0, 256 * 3);
+                    if (inputStates[7]) cameraPos.add(256 * 3, 0, -256 * 3);
+                    if (inputStates[8]) cameraPos.add(-256 * 3, 0, -256 * 3);
+                    if (inputStates[9]) cameraPos.add(-256 * 3, 0, 256 * 3);
+                }
 
                 {
                     UniformData matrices = Shaders.matrices;
@@ -312,7 +311,7 @@ public class HMTest1 {
 
                     Matrix4f view = new Matrix4f();
                     view.setLookAt(cameraPos.x, cameraPos.y, cameraPos.z,
-                            cameraPos.x, cameraPos.y, cameraPos.z + 1,
+                            cameraPos.x, cameraPos.y, cameraPos.z + 100,
                             0.0f, -1.0f, 0.0f);
                     Matrix4f model = new Matrix4f();
                     model.rotate(cameraRotation);
@@ -348,6 +347,21 @@ public class HMTest1 {
                     skyData.upload();
                 }
 
+                int mapX = (int) (cameraPos.x / (GRID * 3)) * GRID;
+                int mapY = (int) (cameraPos.z / (GRID * 3)) * GRID;
+
+                boolean mapUpdated = false;
+                if (map.needsUpdate(mapX, mapY)) {
+                    mapUpdated = true;
+                    cmd.begin();
+                    map.updatePosition(cmd, mapX, mapY);
+                    cmd.end();
+                    cmd.submitAsync(
+                            ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS),
+                            StageMask.TOP_OF_PIPE
+                    );
+                }
+
                 Shaders.heightmapData.setF(0, map.getCx(), map.getCy());
                 Shaders.heightmapData.setF(1, -1000, 4000);
                 Shaders.heightmapData.upload();
@@ -356,12 +370,6 @@ public class HMTest1 {
                 extent2D[0] = ReniSetup.GRAPHICS_CONTEXT.defaultSwapchain().getExtents();
 
                 buffer.begin();
-
-                map.updatePosition(
-                        buffer,
-                        (int) (cameraPos.x / (GRID * 3)) * GRID,
-                        (int) (cameraPos.z / (GRID * 3)) * GRID
-                );
 
                 buffer.transition(
                         ReniSetup.GRAPHICS_CONTEXT.getFramebuffer().image,
@@ -436,8 +444,11 @@ public class HMTest1 {
 
                 buffer.end();
 
+                ReniQueue queue = ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS);
+                if (mapUpdated)
+                    queue.await();
                 ReniSetup.GRAPHICS_CONTEXT.submitFrame(buffer);
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS).await();
+                queue.await();
 
                 ReniSetup.WINDOW.swapAndPollSize();
                 GLFWWindow.poll();
