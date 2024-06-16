@@ -178,7 +178,7 @@ public class HMTest1 {
 
             VkExtent2D[] extent2D = new VkExtent2D[1];
 
-            boolean[] inputStates = new boolean[6];
+            boolean[] inputStates = new boolean[10];
 
             // controls
             ReniSetup.WINDOW.addKeyboardListener(new KeyboardListener() {
@@ -190,6 +190,10 @@ public class HMTest1 {
                     else if (i == GLFW.GLFW_KEY_D) inputStates[3] = true;
                     else if (i == GLFW.GLFW_KEY_SPACE) inputStates[4] = true;
                     else if (i == GLFW.GLFW_KEY_LEFT_SHIFT) inputStates[5] = true;
+                    else if (i == GLFW.GLFW_KEY_V) inputStates[6] = true;
+                    else if (i == GLFW.GLFW_KEY_X) inputStates[7] = true;
+                    else if (i == GLFW.GLFW_KEY_Z) inputStates[8] = true;
+                    else if (i == GLFW.GLFW_KEY_C) inputStates[9] = true;
                 }
 
                 @Override
@@ -200,6 +204,10 @@ public class HMTest1 {
                     else if (i == GLFW.GLFW_KEY_D) inputStates[3] = false;
                     else if (i == GLFW.GLFW_KEY_SPACE) inputStates[4] = false;
                     else if (i == GLFW.GLFW_KEY_LEFT_SHIFT) inputStates[5] = false;
+                    else if (i == GLFW.GLFW_KEY_V) inputStates[6] = false;
+                    else if (i == GLFW.GLFW_KEY_X) inputStates[7] = false;
+                    else if (i == GLFW.GLFW_KEY_Z) inputStates[8] = false;
+                    else if (i == GLFW.GLFW_KEY_C) inputStates[9] = false;
                 }
 
                 @Override
@@ -222,6 +230,7 @@ public class HMTest1 {
 
                 rV[0] += x;
                 rV[1] -= y;
+                rV[0] = Math.toRadians(45) * 200;
 
                 Quaternionf q = new Quaternionf(0, 0, 0, 1);
                 q.rotateLocalY((float) rV[0] / 200f);
@@ -288,6 +297,11 @@ public class HMTest1 {
                 if (inputStates[4]) cameraPos.y += 1.0f;
                 if (inputStates[5]) cameraPos.y -= 1.0f;
 
+                if (inputStates[6]) cameraPos.add(256 * 3, 0, 256 * 3);
+                if (inputStates[7]) cameraPos.add(256 * 3, 0, -256 * 3);
+                if (inputStates[8]) cameraPos.add(-256 * 3, 0, -256 * 3);
+                if (inputStates[9]) cameraPos.add(-256 * 3, 0, 256 * 3);
+
                 {
                     UniformData matrices = Shaders.matrices;
                     matrices.setF(0, Matrices.projection(
@@ -334,7 +348,7 @@ public class HMTest1 {
                     skyData.upload();
                 }
 
-                Shaders.heightmapData.setF(0, map.getCx(), 0);
+                Shaders.heightmapData.setF(0, map.getCx(), map.getCy());
                 Shaders.heightmapData.setF(1, -1000, 4000);
                 Shaders.heightmapData.upload();
 

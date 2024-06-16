@@ -104,12 +104,15 @@ public class Heightmap implements ReniDestructable {
 
         int regStartX = ((hmSize.width()) + cx) % hmSize.width();
         int regEndX = ((hmSize.width()) + cx + cDiffX) % hmSize.width();
+        int startSetX = 0;
+        int endSetX = 0;
 
         if (cDiffX < 0) {
             int temp = regStartX;
             regStartX = regEndX;
             regEndX = temp;
-        }
+            startSetX = cDiffX;
+        } else endSetX = cDiffX;
 
         if (regStartX < 0) regStartX += hmSize.width();
         if (regEndX < 0) regEndX += hmSize.width();
@@ -117,12 +120,15 @@ public class Heightmap implements ReniDestructable {
 
         int regStartY = ((hmSize.height()) + cy) % hmSize.height();
         int regEndY = ((hmSize.height()) + cy + cDiffY) % hmSize.height();
+        int startSetY = 0;
+        int endSetY = 0;
 
         if (cDiffY < 0) {
             int temp = regStartY;
             regStartY = regEndY;
             regEndY = temp;
-        }
+            startSetY = cDiffY;
+        } else endSetY = cDiffY;
 
         if (regStartY < 0) regStartY += hmSize.height();
         if (regEndY < 0) regEndY += hmSize.height();
@@ -131,16 +137,80 @@ public class Heightmap implements ReniDestructable {
         if (cDiffX > 0) {
             shader.computeNoise(
                     cmd,
-                    cx - regStartX + hmSize.width(), 0,
-                    regStartX, 0,
-                    regEndX - regStartX, hmSize.height()
+                    cx - regStartX + hmSize.width(),
+                    cy - regStartY + startSetY,
+                    regStartX,
+                    regStartY + endSetY,
+                    regEndX - regStartX,
+                    hmSize.height()
+            );
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + hmSize.width(),
+                    cy - regStartY + hmSize.height() + startSetY,
+                    regStartX,
+                    0,
+                    regEndX - regStartX,
+                    regStartY + endSetY
             );
         } else if (cDiffX < 0) {
             shader.computeNoise(
                     cmd,
-                    cx - regStartX + cDiffX, 0,
-                    regStartX, 0,
-                    regEndX - regStartX, hmSize.height()
+                    cx - regStartX + cDiffX,
+                    cy - regStartY + startSetY,
+                    regStartX,
+                    regStartY,
+                    regEndX - regStartX,
+                    hmSize.height()
+            );
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + cDiffX,
+                    cy - regStartY + hmSize.height() + startSetY,
+                    regStartX,
+                    0,
+                    regEndX - regStartX,
+                    regStartY
+            );
+        }
+
+        if (cDiffY > 0) {
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + startSetX,
+                    cy - regStartY + hmSize.height(),
+                    regStartX + endSetX,
+                    regStartY,
+                    hmSize.width(),
+                    regEndY - regStartY
+            );
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + hmSize.width() + startSetX,
+                    cy - regStartY + hmSize.height(),
+                    0,
+                    regStartY,
+                    regStartX + endSetX,
+                    regEndY - regStartY
+            );
+        } else if (cDiffY < 0) {
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + startSetX,
+                    cy - regStartY + cDiffY,
+                    regStartX + endSetX,
+                    regStartY,
+                    hmSize.width(),
+                    regEndY - regStartY
+            );
+            shader.computeNoise(
+                    cmd,
+                    cx - regStartX + hmSize.width() + startSetX,
+                    cy - regStartY + cDiffY,
+                    0,
+                    regStartY,
+                    regStartX + endSetX,
+                    regEndY - regStartY
             );
         }
 
