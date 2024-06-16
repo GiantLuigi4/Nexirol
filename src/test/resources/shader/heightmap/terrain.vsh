@@ -9,7 +9,7 @@ layout (binding = 0) uniform Matrices {
     uniform mat4 modelViewMatrix;
 };
 layout (binding = 1) uniform HeightmapData {
-    uniform vec2 PositionOffset;
+    uniform ivec2 PositionOffset;
     uniform vec2 heightRange;
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
@@ -22,6 +22,7 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 const float iVert = 1. / VERT;
 const int V1 = VERT + 1;
 
+// TODO: ideally, the world translates instead of the camera
 void main() {
     const ivec2 tSize = textureSize(heightmapSampler, 0);
     const vec2 iTSF = 1. / tSize;
@@ -31,10 +32,7 @@ void main() {
     const ivec2 xy = (vSize - ivec2(
         gl_InstanceIndex / vSize.x,
         gl_InstanceIndex % vSize.x
-    )) % vSize + ivec2(
-        int(PositionOffset.x / (GRID)),
-        int(PositionOffset.y / (GRID))
-    );
+    )) % vSize + PositionOffset / GRID;
     const vec2 POffset = (xy - vSize * 0.5) * GRID;
 
     // calculate UV

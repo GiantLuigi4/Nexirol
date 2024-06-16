@@ -362,7 +362,7 @@ public class HMTest1 {
                     );
                 }
 
-                Shaders.heightmapData.setF(0, map.getCx(), map.getCy());
+                Shaders.heightmapData.setI(0, map.getCx(), map.getCy());
                 Shaders.heightmapData.setF(1, -1000, 4000);
                 Shaders.heightmapData.upload();
 

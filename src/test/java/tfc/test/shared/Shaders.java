@@ -99,7 +99,7 @@ public class Shaders {
             false, DataLayout.STANDARD,
             new DataFormat(
                     new DataElement(
-                            NumericPrimitive.FLOAT,
+                            NumericPrimitive.INT,
                             2
                     ),
                     new DataElement(
