@@ -9,23 +9,23 @@ int64_t seed(const int x, const int y, const int z) {
     return i >> 16;
 }
 Rand randFor(const Rand rng, const int x, const int y, const int z) {
-    int64_t seed = seed(x, y, z);
-    int64_t j = seed ^ rng.seedLo;
+    const int64_t seed = seed(x, y, z);
+    const int64_t j = seed ^ rng.seedLo;
     return Rand(j, rng.seedHi);
 }
 Rand randFor(const Rand rng, const float x, const float y, const float z) {
-    int64_t seed = seed(floatBitsToInt(x), floatBitsToInt(y), floatBitsToInt(z));
-    int64_t j = seed ^ rng.seedLo;
+    const int64_t seed = seed(floatBitsToInt(x), floatBitsToInt(y), floatBitsToInt(z));
+    const int64_t j = seed ^ rng.seedLo;
     return Rand(j, rng.seedHi);
 }
 
 Rand reseed(Rand rng, const int x, const int y, const int z) {
-    int64_t seed = seed(x, y, z);
+    const int64_t seed = seed(x, y, z);
     rng.seedLo = seed ^ rng.seedLo;
     return rng;
 }
 Rand reseed(Rand rng, const float x, const float y, const float z) {
-    int64_t seed = seed(floatBitsToInt(x), floatBitsToInt(y), floatBitsToInt(z));
+    const int64_t seed = seed(floatBitsToInt(x), floatBitsToInt(y), floatBitsToInt(z));
     rng.seedLo = seed ^ rng.seedLo;
     return rng;
 }

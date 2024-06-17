@@ -26,7 +26,7 @@ layout (location = 5) in vec4 ColorMod;
 
 void main() {
     //@formatter:off
-    vec4 coord = rotate(Position * vec4(Scl, 1), Rotation)
+    const vec4 coord = rotate(Position * vec4(Scl, 1), Rotation)
             + vec4(Offset, 0);
     //@formatter:on
 
