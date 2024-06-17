@@ -78,11 +78,11 @@ public class PhysXWorld extends PhysicsWorld {
         scene = physics.createScene(sceneDesc);
     }
 
-//    PxMaterial material = physics.createMaterial(
-//            0.5f,
-//            0.5f,
-//            0f
-//    );
+    PxMaterial material = physics.createMaterial(
+            0.5f,
+            0.5f,
+            0f
+    );
 
     public void addBody(RigidBody body) {
         PxRigidActor actor;
@@ -105,13 +105,13 @@ public class PhysXWorld extends PhysicsWorld {
         }
         PxShape shape;
         PxGeometry geometry;
-        PxMaterial material;
+        PxMaterial material = this.material;
 
-        material = physics.createMaterial(
-                body.material.staticFriction,
-                body.material.dynamicFriction,
-                body.material.restitution
-        );
+//        material = physics.createMaterial(
+//                body.material.staticFriction,
+//                body.material.dynamicFriction,
+//                body.material.restitution
+//        );
 
         shape = physics.createShape(
                 geometry = switch (body.collider.type) {
@@ -154,18 +154,30 @@ public class PhysXWorld extends PhysicsWorld {
 
     ArrayList<Pair<RigidBody, PxRigidActor>> bodies = new ArrayList<>();
 
+    boolean simulating = false;
     public void tick() {
-        long nt = System.currentTimeMillis();
-        scene.simulate(0.016f);
-        scene.fetchResults(true);
-        long tt = System.currentTimeMillis();
+//        long nt = System.currentTimeMillis();
+//        long tt = System.currentTimeMillis();
 //        System.out.println(1000d / (tt - nt));
-        for (Pair<RigidBody, PxRigidActor> body : bodies) {
-            PxVec3 vec3 = body.right().getGlobalPose().getP();
-            PxQuat quat = body.right().getGlobalPose().getQ();
-            body.left().setPosition(vec3.getX(), vec3.getY(), vec3.getZ());
-            body.left().setOrientation(-quat.getX(), -quat.getY(), -quat.getZ(), -quat.getW());
-            body.left().update();
+
+//        scene.simulate(0.016f);
+//        scene.fetchResults(true);
+
+        if (!simulating) {
+            scene.simulate(0.016f);
+            simulating = true;
+        } else if (scene.checkResults(false)) {
+            if (scene.fetchResults(true)) {
+                for (Pair<RigidBody, PxRigidActor> body : bodies) {
+                    PxVec3 vec3 = body.right().getGlobalPose().getP();
+                    PxQuat quat = body.right().getGlobalPose().getQ();
+                    body.left().setPosition(vec3.getX(), vec3.getY(), vec3.getZ());
+                    body.left().setOrientation(-quat.getX(), -quat.getY(), -quat.getZ(), -quat.getW());
+                    body.left().update();
+                }
+            }
+            scene.simulate(0.016f);
         }
+//        scene.simulate(0.016f);
     }
 }

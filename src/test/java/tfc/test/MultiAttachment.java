@@ -119,11 +119,10 @@ public class MultiAttachment {
             buffer.clearDepth(1f);
 
 //            PhysicsWorld world = new BulletWorld();
-//            PhysicsWorld world = new BulletWorld();
             PhysicsWorld world = new PhysXWorld();
 
             final int MAX_INSTANCES = 50_000;
-            final int SHADER_MAX_INSTANCES = 1_000;
+            final int SHADER_MAX_INSTANCES = 5_000;
             InstanceCollection collection = new InstanceCollection(
                     (collection1) -> {
                         collection1.maxInstances = SHADER_MAX_INSTANCES;
@@ -202,6 +201,7 @@ public class MultiAttachment {
                         (cmd, idx) -> {
                             ByteBuffer cubeBuf = Shaders.cubeInstanceData.get(idx);
                             FloatBuffer fb = cubeBuf.asFloatBuffer();
+
                             // position
                             fb.put(0, body.vec.x);
                             fb.put(1, body.vec.y);

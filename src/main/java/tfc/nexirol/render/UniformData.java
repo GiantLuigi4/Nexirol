@@ -182,14 +182,28 @@ public class UniformData implements ReniDestructable {
         return subBuf;
     }
 
+    public void alignUL(int start, int end) {
+        ulStart = Math.min(ulStart, start);
+        ulEnd = Math.max(ulEnd, end);
+    }
+
+    public void alignUL(int index) {
+        IndexedElement indexed = indexedElements[index];
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        int sz = indexed.element.size * indexed.element.type.size;
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + sz);
+    }
+
+    float oneDiv255 = 1 / 255f;
+
     public void setColor(int index, int r, int g, int b) {
         IndexedElement indexed = indexedElements[index];
         if (indexed.element.size != 3 || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
         FloatBuffer fb = bytes.position(indexed.memoryOffset).asFloatBuffer();
-        fb.put(0, r / 255f);
-        fb.put(1, g / 255f);
-        fb.put(2, b / 255f);
+        fb.put(0, r * oneDiv255);
+        fb.put(1, g * oneDiv255);
+        fb.put(2, b * oneDiv255);
         ulStart = Math.min(ulStart, indexed.memoryOffset);
         ulEnd = Math.max(ulEnd, indexed.memoryOffset + (3 * 4));
         bytes.position(0);
@@ -200,10 +214,10 @@ public class UniformData implements ReniDestructable {
         if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
         FloatBuffer fb = bytes.position(indexed.memoryOffset).asFloatBuffer();
-        fb.put(0, r / 255f);
-        fb.put(1, g / 255f);
-        fb.put(2, b / 255f);
-        fb.put(3, a / 255f);
+        fb.put(0, r * oneDiv255);
+        fb.put(1, g * oneDiv255);
+        fb.put(2, b * oneDiv255);
+        fb.put(3, a * oneDiv255);
         ulStart = Math.min(ulStart, indexed.memoryOffset);
         ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4 * 4));
         bytes.position(0);

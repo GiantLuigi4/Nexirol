@@ -45,6 +45,13 @@ void main() {
         const vec3 eyeSpacePos10 = gl_in[2].gl_Position.xyz + offset;
         const vec3 eyeSpacePos11 = gl_in[3].gl_Position.xyz + offset;
 
+        const vec4 pS0 = projectionMatrix * vec4(eyeSpacePos00, 1);
+        const vec4 pS1 = projectionMatrix * vec4(eyeSpacePos01, 1);
+        const vec4 pS2 = projectionMatrix * vec4(eyeSpacePos10, 1);
+        const vec4 pS3 = projectionMatrix * vec4(eyeSpacePos11, 1);
+
+        float mX = min(min(pS0.x, pS1.x), min(pS2.x, pS3.x));
+
         // ----------------------------------------------------------------------
         // calculate horizontal distance of vertex
         const vec4 dist = clamp((abs(vec4(
@@ -56,12 +63,16 @@ void main() {
 
         // ----------------------------------------------------------------------
         // calculate edge tesselation levels using some simple interpolation
-        const vec4 tessLevel = mix(MAX_TESS_LEVEL.xxxx, MIN_TESS_LEVEL.xxxx, vec4(
+        vec4 tessLevel = mix(MAX_TESS_LEVEL.xxxx, MIN_TESS_LEVEL.xxxx, vec4(
             min(dist.z, dist.x),
             min(dist.x, dist.y),
             min(dist.y, dist.w),
             min(dist.w, dist.z)
         ));
+
+        if (mX < 0) {
+            tessLevel = vec4(0);
+        }
 
         // ----------------------------------------------------------------------
         // and set

@@ -11,10 +11,9 @@ vec4 mul(const vec4 q0, const vec4 q1) {
     //     q0.w * q1.w - q0.x * q1.x - q0.y * q1.y - q0.z * q1.z
     // );
 
-    return res = fma(
+    return fma(
         q0.wwww,
-        q1,
-        fma(
+        q1, fma(
             q0.xxxx,
             vec4(q1.w, -q1.z, q1.y, -q1.x),
             fma(
@@ -26,7 +25,6 @@ vec4 mul(const vec4 q0, const vec4 q1) {
     );
     // @formatter:on
 }
-
 
 /* rotates a vector */
 vec4 rotate(const vec4 point, const vec4 quat) {
@@ -46,8 +44,8 @@ vec4 rotate(const vec4 point, const vec4 quat) {
     yw = quat.y * quat.w,
 
     // === ks ===
-    k = 1 / (xx + yy + zz + ww),
-    two_k = 2 * k;
+    k = 1.0 / (xx + yy + zz + ww),
+    two_k = 2.0 * k;
 
     // previous logic
     // return vec4(
@@ -59,24 +57,24 @@ vec4 rotate(const vec4 point, const vec4 quat) {
 
     return vec4(
         fma(
+            point.xxx,
             vec3(
                 (xx - yy - zz + ww) * k,
                 two_k * (xy + zw),
                 two_k * (xz - yw)
             ),
-            point.xxx,
             fma(
+                point.yyy,
                 vec3(
                     two_k * (xy - zw),
                     (yy - xx - zz + ww) * k,
                     two_k * (yz + xw)
                 ),
-                point.yyy,
-                vec3(
+                point.z * vec3(
                     two_k * (xz + yw),
                     two_k * (yz - xw),
                     (zz - xx - yy + ww) * k
-                ) * point.z
+                )
             )
         ),
         point.w
@@ -85,8 +83,8 @@ vec4 rotate(const vec4 point, const vec4 quat) {
 
 /* constructs a quaternion from an axis angle */
 vec4 quatFromRotation(const float angle, const float x, const float y, const float z) {
-    const float s = sin(angle * 0.5f);
-    const float c = cos(angle * 0.5f);
+    const float s = sin(angle * 0.5);
+    const float c = cos(angle * 0.5);
     return vec4(vec3(x, y, z) * s, c);
 }
 
