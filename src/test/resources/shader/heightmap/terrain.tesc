@@ -4,14 +4,14 @@
 
 in gl_PerVertex {
     vec4 gl_Position;
-    float gl_PointSize;
-    float[] gl_ClipDistance;
-    float[] gl_CullDistance;
 } gl_in[gl_MaxPatchVertices];
+out gl_PerVertex {
+    vec4 gl_Position;
+} gl_out[];
 
 layout (binding = 0) uniform Matrices {
-    uniform mat4 projectionMatrix;
-    uniform mat4 modelViewMatrix;
+    mat4 projectionMatrix;
+    mat4 modelViewMatrix;
 };
 
 layout (vertices = 4) out;
@@ -47,26 +47,30 @@ void main() {
 
         // ----------------------------------------------------------------------
         // calculate horizontal distance of vertex
-        const float distance00 = clamp((abs(length(eyeSpacePos00.xyz)) - MIN_DISTANCE) / mm, 0.0, 1.0);
-        const float distance01 = clamp((abs(length(eyeSpacePos01.xyz)) - MIN_DISTANCE) / mm, 0.0, 1.0);
-        const float distance10 = clamp((abs(length(eyeSpacePos10.xyz)) - MIN_DISTANCE) / mm, 0.0, 1.0);
-        const float distance11 = clamp((abs(length(eyeSpacePos11.xyz)) - MIN_DISTANCE) / mm, 0.0, 1.0);
+        const vec4 dist = clamp((abs(vec4(
+            length(eyeSpacePos00.xyz),
+            length(eyeSpacePos01.xyz),
+            length(eyeSpacePos10.xyz),
+            length(eyeSpacePos11.xyz)
+        )) - MIN_DISTANCE) / mm, 0.0, 1.0);
 
         // ----------------------------------------------------------------------
         // calculate edge tesselation levels using some simple interpolation
-        const float tessLevel0 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00));
-        const float tessLevel1 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance00, distance01));
-        const float tessLevel2 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance01, distance11));
-        const float tessLevel3 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance11, distance10));
+        const vec4 tessLevel = mix(MAX_TESS_LEVEL.xxxx, MIN_TESS_LEVEL.xxxx, vec4(
+            min(dist.z, dist.x),
+            min(dist.x, dist.y),
+            min(dist.y, dist.w),
+            min(dist.w, dist.z)
+        ));
 
         // ----------------------------------------------------------------------
         // and set
-        gl_TessLevelOuter[0] = tessLevel0;
-        gl_TessLevelOuter[1] = tessLevel1;
-        gl_TessLevelOuter[2] = tessLevel2;
-        gl_TessLevelOuter[3] = tessLevel3;
+        gl_TessLevelOuter[0] = tessLevel.x;
+        gl_TessLevelOuter[1] = tessLevel.y;
+        gl_TessLevelOuter[2] = tessLevel.z;
+        gl_TessLevelOuter[3] = tessLevel.w;
 
-        gl_TessLevelInner[0] = max(tessLevel1, tessLevel3);
-        gl_TessLevelInner[1] = max(tessLevel0, tessLevel2);
+        gl_TessLevelInner[0] = max(tessLevel.y, tessLevel.w);
+        gl_TessLevelInner[1] = max(tessLevel.x, tessLevel.z);
     }
 }

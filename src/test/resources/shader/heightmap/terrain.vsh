@@ -5,12 +5,12 @@ layout (location = 0) out vec2 uv;
 
 // ======= UNIFORMS =======
 layout (binding = 0) uniform Matrices {
-    uniform mat4 projectionMatrix;
-    uniform mat4 modelViewMatrix;
+    mat4 projectionMatrix;
+    mat4 modelViewMatrix;
 };
 layout (binding = 1) uniform HeightmapData {
-    uniform ivec2 PositionOffset;
-    uniform vec2 heightRange;
+    ivec2 PositionOffset;
+    vec2 heightRange;
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
@@ -21,6 +21,10 @@ layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
 const float iVert = 1. / VERT;
 const int V1 = VERT + 1;
+
+out gl_PerVertex {
+    vec4 gl_Position;
+};
 
 // TODO: ideally, the world translates instead of the camera
 void main() {
@@ -47,7 +51,6 @@ void main() {
     // calculate vertex position information
     const vec4 vPos = vec4((UV * GRID + POffset) * VERT_SCALE, 0.0, 1.0).xzyw;
     //const float height = sampleHm(uv);
-    //vPos.y = height;
 
     gl_Position = vPos;
 }

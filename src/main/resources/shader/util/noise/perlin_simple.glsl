@@ -2,8 +2,8 @@
 // requires: simple.glsl
 
 // https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83#perlin-noise
-float perlinNoise(vec2 p, int res) {
-    float persistance = .5;
+float perlinNoise(const vec2 p, const int res) {
+    const float persistance = .5;
     float n = 0.;
     float normK = 0.;
     float f = 4.;
@@ -17,6 +17,6 @@ float perlinNoise(vec2 p, int res) {
         if (iCount == res) break;
         iCount++;
     }
-    float nf = n / normK;
+    const float nf = n / normK;
     return nf * nf * nf * nf;
 }

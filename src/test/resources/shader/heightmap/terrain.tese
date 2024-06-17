@@ -6,15 +6,18 @@ layout (quads, fractional_even_spacing, cw) in;
 
 // ======= UNIFORMS =======
 layout (binding = 0) uniform Matrices {
-    uniform mat4 projectionMatrix;
-    uniform mat4 modelViewMatrix;
+    mat4 projectionMatrix;
+    mat4 modelViewMatrix;
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
 
 layout (binding = 1) uniform HeightmapData {
-    uniform vec2 PositionOffset;
-    uniform vec2 heightRange;
+    vec2 PositionOffset;
+    vec2 heightRange;
 };
+in gl_PerVertex {
+    vec4 gl_Position;
+} gl_in[gl_MaxPatchVertices];
 
 // ======= INPUT DATA =======
 layout (location = 0) in vec2[] uv;
@@ -31,10 +34,10 @@ layout (location = 1) out vec2 uvOut;
 
 void main() {
     // ======= CONTROL POINTS =======
-    const vec3 p00 = gl_in[0].gl_Position.xyz;
-    const vec3 p01 = gl_in[1].gl_Position.xyz;
-    const vec3 p10 = gl_in[2].gl_Position.xyz;
-    const vec3 p11 = gl_in[3].gl_Position.xyz;
+    const vec2 p00 = gl_in[0].gl_Position.xz;
+    const vec2 p01 = gl_in[1].gl_Position.xz;
+    const vec2 p10 = gl_in[2].gl_Position.xz;
+    const vec2 p11 = gl_in[3].gl_Position.xz;
 
     // ======= UV =======
     const vec2 uvLerp = lerp(
@@ -44,13 +47,11 @@ void main() {
     );
 
     // ======= POSITION =======
-    vec3 p = lerp(
+    const vec3 p = vec3(lerp(
         p00, p10,
         p01, p11,
         gl_TessCoord.xy
-    );
-    p.y = sampleHm(uvLerp);
-
+    ), sampleHm(uvLerp)).xzy;
 
     // ======= OUTPUT VERT =======
     wsCoordOut = p;

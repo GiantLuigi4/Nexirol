@@ -1,12 +1,11 @@
-#define VERT 4
-#define GRID (64*VERT)
-#define VERT_SCALE 3.0
+const int VERT =4;
+const int GRID =(64*VERT);
+const float VERT_SCALE= 3.0;
 
 //#ifndef EXCLUDE_SAMPLE
 float sampleHm(vec2 uv) {
-    float height = texture(heightmapSampler, uv).x;
-    height = mix(heightRange.x, heightRange.y, height);
-    // TODO: implement clamping
-    return height;
+    const float height = texture(heightmapSampler, uv).x;
+    // TODO: edge implement clamping
+    return mix(heightRange.x, heightRange.y, height);
 }
 //#endif

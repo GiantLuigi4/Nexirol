@@ -30,7 +30,7 @@ void main() {
     float alpha;
     #ifdef MODE_ALPHA
         #ifndef NOISE
-            vec2 vvalue = ENTRY();
+            const vec2 vvalue = ENTRY();
             value = vvalue.x;
             alpha = vvalue.y;
         #else
@@ -43,7 +43,7 @@ void main() {
     #endif
 
     #ifdef HIGHP
-        int ivalue = int(value * 16777215); // 16777215 is the largest value representable with 3 8-bit integers
+        const int ivalue = int(value * 16777215); // 16777215 is the largest value representable with 3 8-bit integers
 
         ivec3 intVec;
         intVec.x = (ivalue >> 16) & 255;

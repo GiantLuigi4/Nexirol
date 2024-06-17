@@ -1,7 +1,7 @@
 // a collection of utils for doing quaternion math on the GPU
 
 /* multiplies two quaternions */
-vec4 mul(vec4 q0, vec4 q1) {
+vec4 mul(const vec4 q0, const vec4 q1) {
     // @formatter:off
     return vec4(
         q0.w * q1.x + q0.x * q1.w + q0.y * q1.z - q0.z * q1.y,
@@ -14,8 +14,8 @@ vec4 mul(vec4 q0, vec4 q1) {
 
 
 /* rotates a vector */
-vec4 rotate(vec4 point, vec4 quat) {
-    float
+vec4 rotate(const vec4 point, const vec4 quat) {
+    const float
     // === squares ===
     xx = quat.x * quat.x,
     yy = quat.y * quat.y,
@@ -34,18 +34,44 @@ vec4 rotate(vec4 point, vec4 quat) {
     k = 1 / (xx + yy + zz + ww),
     two_k = 2 * k;
 
+    // without using vec3s so heavily
+    // return vec4(
+    //    fma((xx - yy - zz + ww) * k, point.x, fma(two_k * (xy - zw), point.y, (two_k * (xz + yw)) * point.z)),
+    //    fma(two_k * (xy + zw), point.x, fma((yy - xx - zz + ww) * k, point.y, (two_k * (yz - xw)) * point.z)),
+    //    fma(two_k * (xz - yw), point.x, fma(two_k * (yz + xw), point.y, ((zz - xx - yy + ww) * k) * point.z)),
+    //    point.w
+    //);
+
     return vec4(
-        fma((xx - yy - zz + ww) * k, point.x, fma(two_k * (xy - zw), point.y, (two_k * (xz + yw)) * point.z)),
-        fma(two_k * (xy + zw), point.x, fma((yy - xx - zz + ww) * k, point.y, (two_k * (yz - xw)) * point.z)),
-        fma(two_k * (xz - yw), point.x, fma(two_k * (yz + xw), point.y, ((zz - xx - yy + ww) * k) * point.z)),
+        fma(
+            vec3(
+                (xx - yy - zz + ww) * k,
+                two_k * (xy + zw),
+                two_k * (xz - yw)
+            ),
+            point.xxx,
+            fma(
+                vec3(
+                    two_k * (xy - zw),
+                    (yy - xx - zz + ww) * k,
+                    two_k * (yz + xw)
+                ),
+                point.yyy,
+                vec3(
+                    two_k * (xz + yw),
+                    two_k * (yz - xw),
+                    (zz - xx - yy + ww) * k
+                ) * point.z
+            )
+        ),
         point.w
     );
 }
 
 /* constructs a quaternion from an axis angle */
-vec4 quatFromRotation(float angle, float x, float y, float z) {
-    float s = sin(angle * 0.5f);
-    float w = cos(angle * 0.5f);
+vec4 quatFromRotation(const float angle, const float x, const float y, const float z) {
+    const float s = sin(angle * 0.5f);
+    const float w = cos(angle * 0.5f);
     return vec4(vec3(x, y, z) * s, w);
 }
 

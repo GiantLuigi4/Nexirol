@@ -3,9 +3,9 @@
 // requires: math/bitwise/u_shir.glsl
 
 int64_t nextLong(Rand rand) {
-    int i = int(rand.seedLo - rand.seedHi);
+    const int i = int(rand.seedLo - rand.seedHi);
     int j = int(rand.seedHi ^ rand.seedLo);
-    int k = rotateLeft(i + j, 17) + i;
+    const int k = rotateLeft(i + j, 17) + i;
     j ^= i;
     rand.seedLo = rotateLeft(i, 15) ^ j ^ j << 13;
     rand.seedHi = rotateLeft(j, 13);

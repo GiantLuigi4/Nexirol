@@ -2,14 +2,14 @@
 
 const float inv = 1 / float(0xFFFFFFFFu);
 
-uint rotl(const uint x, int k) {
+uint rotl(const uint x, const int k) {
     return (x << k) | (x >> (32 - k));
 }
 
 int64_t nextLong(Rand rand) {
-    uint s0 = uint(rand.seedLo);
+    const uint s0 = uint(rand.seedLo);
     uint s1 = uint(rand.seedHi);
-    uint result = s0 + s1;
+    const uint result = s0 + s1;
 
     s1 ^= s0;
     rand.seedLo = rotl(s0, 7) ^ s1 ^ (s1 << 9); // a, b
