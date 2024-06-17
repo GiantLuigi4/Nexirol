@@ -3,11 +3,26 @@
 /* multiplies two quaternions */
 vec4 mul(const vec4 q0, const vec4 q1) {
     // @formatter:off
-    return vec4(
-        q0.w * q1.x + q0.x * q1.w + q0.y * q1.z - q0.z * q1.y,
-        q0.w * q1.y - q0.x * q1.z + q0.y * q1.w + q0.z * q1.x,
-        q0.w * q1.z + q0.x * q1.y - q0.y * q1.x + q0.z * q1.w,
-        q0.w * q1.w - q0.x * q1.x - q0.y * q1.y - q0.z * q1.z
+    // previous logic
+    // return vec4(
+    //     q0.w * q1.x + q0.x * q1.w + q0.y * q1.z - q0.z * q1.y,
+    //     q0.w * q1.y - q0.x * q1.z + q0.y * q1.w + q0.z * q1.x,
+    //     q0.w * q1.z + q0.x * q1.y - q0.y * q1.x + q0.z * q1.w,
+    //     q0.w * q1.w - q0.x * q1.x - q0.y * q1.y - q0.z * q1.z
+    // );
+
+    return res = fma(
+        q0.wwww,
+        q1,
+        fma(
+            q0.xxxx,
+            vec4(q1.w, -q1.z, q1.y, -q1.x),
+            fma(
+                q0.yyyy,
+                vec4(q1.z, q1.w, -q1.x, -q1.y),
+                q0.z * vec4(-q1.y, q1.x, q1.w, -q1.z)
+            )
+        )
     );
     // @formatter:on
 }
@@ -34,13 +49,13 @@ vec4 rotate(const vec4 point, const vec4 quat) {
     k = 1 / (xx + yy + zz + ww),
     two_k = 2 * k;
 
-    // without using vec3s so heavily
+    // previous logic
     // return vec4(
-    //    fma((xx - yy - zz + ww) * k, point.x, fma(two_k * (xy - zw), point.y, (two_k * (xz + yw)) * point.z)),
-    //    fma(two_k * (xy + zw), point.x, fma((yy - xx - zz + ww) * k, point.y, (two_k * (yz - xw)) * point.z)),
-    //    fma(two_k * (xz - yw), point.x, fma(two_k * (yz + xw), point.y, ((zz - xx - yy + ww) * k) * point.z)),
-    //    point.w
-    //);
+    //     fma((xx - yy - zz + ww) * k, point.x, fma(two_k * (xy - zw), point.y, (two_k * (xz + yw)) * point.z)),
+    //     fma(two_k * (xy + zw), point.x, fma((yy - xx - zz + ww) * k, point.y, (two_k * (yz - xw)) * point.z)),
+    //     fma(two_k * (xz - yw), point.x, fma(two_k * (yz + xw), point.y, ((zz - xx - yy + ww) * k) * point.z)),
+    //     point.w
+    // );
 
     return vec4(
         fma(
@@ -71,8 +86,8 @@ vec4 rotate(const vec4 point, const vec4 quat) {
 /* constructs a quaternion from an axis angle */
 vec4 quatFromRotation(const float angle, const float x, const float y, const float z) {
     const float s = sin(angle * 0.5f);
-    const float w = cos(angle * 0.5f);
-    return vec4(vec3(x, y, z) * s, w);
+    const float c = cos(angle * 0.5f);
+    return vec4(vec3(x, y, z) * s, c);
 }
 
 /* gets the conjugate of the quaternion */
