@@ -83,7 +83,7 @@ public class HMTest1 {
 
         // === Create Heightmap Image ===
 //        int res = 2048 * 8;
-        int res = 2048 * 4;
+        int res = 2048 * 4 + 1;
 //        int res = 256 * 4;
 //        int res = 64 * 64;
 //        int res = 1024;

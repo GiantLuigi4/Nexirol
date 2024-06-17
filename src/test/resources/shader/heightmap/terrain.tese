@@ -47,14 +47,20 @@ void main() {
     );
 
     // ======= POSITION =======
-    const vec3 p = vec3(lerp(
+    const vec2 p = lerp(
         p00, p10,
         p01, p11,
         gl_TessCoord.xy
-    ), sampleHm(uvLerp)).xzy;
+    );
+    const vec3 p3 = vec3(
+        p,
+        // TODO
+//        length(p) > 256 ? sampleHmNearest(uvLerp) : sampleHm(uvLerp)
+        sampleHm(uvLerp)
+    ).xzy;
 
     // ======= OUTPUT VERT =======
-    wsCoordOut = p;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    wsCoordOut = p3;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p3, 1.0);
     uvOut = uvLerp;
 }
