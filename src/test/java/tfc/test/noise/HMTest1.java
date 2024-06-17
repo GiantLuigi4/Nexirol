@@ -82,6 +82,7 @@ public class HMTest1 {
         hmData.setup(ReniSetup.GRAPHICS_CONTEXT, true);
 
         // === Create Heightmap Image ===
+//        int res = 2048 * 16;
 //        int res = 2048 * 8;
         int res = 2048 * 4;
 //        int res = 256 * 4;

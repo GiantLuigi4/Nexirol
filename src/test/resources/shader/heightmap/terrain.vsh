@@ -49,8 +49,8 @@ void main() {
     uv = (xy + UV) * iTSF * GRID;
 
     // calculate vertex position information
-    const vec4 vPos = vec4((UV * GRID + POffset) * VERT_SCALE, 0.0, 1.0).xzyw;
-    //const float height = sampleHm(uv);
+    const vec2 vPos = vec2((UV * GRID + POffset) * VERT_SCALE);
+    const float height = sampleHmNearest(uv);
 
-    gl_Position = vPos;
+    gl_Position = vec4(vPos.x, height, vPos.y, 1.0);
 }

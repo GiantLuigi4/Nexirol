@@ -1,11 +1,23 @@
-const int VERT =4;
-const int GRID =(64*VERT);
+const int VERT = 4;
+const int GRID = (64*VERT);
 const float VERT_SCALE= 3.0;
 
-//#ifndef EXCLUDE_SAMPLE
 //#define ROUGH
-float sampleHm(const vec2 uv) {
-    // TODO: edge implement clamping
+
+//#ifndef EXCLUDE_SAMPLE
+vec2 clampToEdge(vec2 uv) {
+    // TODO: implement edge clamping
+//    uv = mod(uv, 1);
+//    const vec2 tSize = textureSize(heightmapSampler, 0);
+//    const vec2 pSet = PositionOffset / 2;
+//    uv -= pSet;
+//    uv = clamp(uv, 0.25, 0.75);
+//    uv += pSet;
+    return uv;
+}
+
+float sampleHm(vec2 uv) {
+    uv = clampToEdge(uv);
     #ifndef ROUGH
         const float height = textureLod(heightmapSampler, uv, 0).x;
     #else
@@ -19,8 +31,8 @@ float sampleHm(const vec2 uv) {
     return mix(heightRange.x, heightRange.y, height);
 }
 
-float sampleHmNearest(const vec2 uv) {
-    // TODO: edge implement clamping
+float sampleHmNearest(vec2 uv) {
+    uv = clampToEdge(uv);
     const ivec2 tSize = textureSize(heightmapSampler, 0);
     const vec2 iv = floor(uv * tSize);
     const float height = texelFetch(heightmapSampler, (ivec2(

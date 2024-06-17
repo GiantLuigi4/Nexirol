@@ -1,8 +1,11 @@
 package tfc.test.noise.hm;
 
 import org.lwjgl.vulkan.VkExtent2D;
+import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.SwapchainUsage;
+import tfc.renirol.frontend.enums.masks.AccessMask;
+import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.modes.image.FilterMode;
 import tfc.renirol.frontend.enums.modes.image.MipmapMode;
 import tfc.renirol.frontend.enums.modes.image.WrapMode;
@@ -104,6 +107,15 @@ public class Heightmap implements ReniDestructable {
         int cDiffY = centerY - cy;
         if (cDiffX == 0 && cDiffY == 0) return;
 
+        cmd.transition(
+                img.getHandle(),
+                StageMask.DRAW,
+                StageMask.COLOR_ATTACHMENT_OUTPUT,
+                ImageLayout.SHADER_READONLY,
+                ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
+                AccessMask.SHADER_READ,
+                AccessMask.COLOR_WRITE
+        );
         shader.beginCompute(cmd, fbo, hmSize);
 
         int regStartX = ((hmSize.width()) + cx) % hmSize.width();
@@ -219,6 +231,15 @@ public class Heightmap implements ReniDestructable {
         }
 
         shader.finishCompute(cmd);
+        cmd.transition(
+                img.getHandle(),
+                StageMask.COLOR_ATTACHMENT_OUTPUT,
+                StageMask.DRAW,
+                ImageLayout.COLOR_ATTACHMENT_OPTIMAL,
+                ImageLayout.SHADER_READONLY,
+                AccessMask.COLOR_WRITE,
+                AccessMask.SHADER_READ
+        );
 
         cx = centerX;
         cy = centerY;

@@ -29,7 +29,7 @@ public class ReniSetup {
 
     static {
         Setup.performanceSetup();
-        if (Scenario.useRenderDoc) Setup.loadRenderdoc();
+//        if (Scenario.useRenderDoc) Setup.loadRenderdoc();
         if (!Renirol.BACKEND.equals("OpenGL"))
             Setup.noAPI();
         WINDOW = Scenario.useWinNT ? new WinNTWindow(
@@ -71,7 +71,7 @@ public class ReniSetup {
                         .require(ReniHardwareCapability.SWAPCHAIN)
                         .require(ReniHardwareCapability.INSTANCING)
                         .require(ReniHardwareCapability.TESSELATION_SHADER)
-                        // if any integrated GPU meets the requirements, then filter out any non-dedicated GPU
+                        // if any dedicated GPU meets the requirements, then filter out any non-dedicated GPU
                         .prioritizeDedicated()
                         // it can be useful to switch to the integrated GPU for testing purposes, especially if your iGPU is a different brand than your dGPU
 //                        .prioritizeIntegrated()

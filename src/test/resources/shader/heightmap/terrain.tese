@@ -55,8 +55,7 @@ void main() {
     const vec3 p3 = vec3(
         p,
         // TODO
-//        length(p) > 256 ? sampleHmNearest(uvLerp) : sampleHm(uvLerp)
-        sampleHm(uvLerp)
+        length(p) > (2048 * 2) ? sampleHmNearest(uvLerp) : sampleHm(uvLerp)
     ).xzy;
 
     // ======= OUTPUT VERT =======
