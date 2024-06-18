@@ -10,10 +10,8 @@ import tfc.nexirol.math.Matrices;
 import tfc.nexirol.primitives.CubePrimitive;
 import tfc.nexirol.render.DataLayout;
 import tfc.nexirol.render.UniformData;
-import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
-import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
 import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
@@ -37,7 +35,6 @@ import tfc.renirol.frontend.rendering.pass.RenderPassInfo;
 import tfc.renirol.frontend.rendering.resource.buffer.BufferDescriptor;
 import tfc.renirol.frontend.rendering.resource.buffer.DataElement;
 import tfc.renirol.frontend.rendering.resource.buffer.DataFormat;
-import tfc.renirol.frontend.rendering.resource.descriptor.DescriptorPool;
 import tfc.renirol.frontend.rendering.resource.descriptor.ImageInfo;
 import tfc.renirol.frontend.rendering.resource.image.Image;
 import tfc.renirol.frontend.rendering.resource.image.texture.TextureSampler;
@@ -83,8 +80,8 @@ public class HMTest1 {
 
         // === Create Heightmap Image ===
 //        int res = 2048 * 16;
-//        int res = 2048 * 8;
-        int res = 2048 * 4;
+        int res = 2048 * 8;
+//        int res = 2048 * 4;
 //        int res = 256 * 4;
 //        int res = 64 * 64;
 //        int res = 1024;
@@ -116,7 +113,15 @@ public class HMTest1 {
                 false, 0,
                 0, 0, 0
         );
+        TextureSampler samplerNearest = map.createSampler(
+                WrapMode.REPEAT, WrapMode.REPEAT,
+                FilterMode.NEAREST, FilterMode.NEAREST,
+                MipmapMode.NEAREST,
+                false, 0,
+                0, 0, 0
+        );
         Shaders.terrainTextureData.setCTS(0, new ImageInfo(img, sampler));
+        Shaders.terrainTextureDataNearest.setCTS(0, new ImageInfo(img, samplerNearest));
 
 
         final RenderPassInfo pass = ReniSetup.GRAPHICS_CONTEXT.getPass(
@@ -134,14 +139,6 @@ public class HMTest1 {
         desc0.attribute(0, 0, AttributeFormat.RGBA32_FLOAT, 0);
         desc0.attribute(0, 1, AttributeFormat.RGB32_FLOAT, formatSky.offset(VertexElements.NORMAL_XYZ));
 
-        // TODO: ideally this stuff would be abstracted away more
-        final DescriptorPool pool = new DescriptorPool(
-                ReniSetup.GRAPHICS_CONTEXT.getLogical(),
-                1,
-                new DescriptorPoolFlags[0],
-                DescriptorPool.PoolInfo.of(DescriptorType.UNIFORM_BUFFER, 10)
-        );
-
         shaders.SKY.prepare();
         shaders.SKY.bind(state, desc0);
         state.depthTest(false).depthMask(false);
@@ -157,7 +154,7 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        int GRID = 4;
+        int GRID = 64;
         QuadPointGrid quad = new QuadPointGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
@@ -349,8 +346,9 @@ public class HMTest1 {
                     skyData.upload();
                 }
 
-                int mapX = (int) (cameraPos.x / (GRID * 3)) * GRID;
-                int mapY = (int) (cameraPos.z / (GRID * 3)) * GRID;
+                final int GRID_1 = 64;
+                int mapX = (int) (cameraPos.x / (GRID_1 * 3)) * GRID_1;
+                int mapY = (int) (cameraPos.z / (GRID_1 * 3)) * GRID_1;
 
                 boolean mapUpdated = false;
                 if (map.needsUpdate(mapX, mapY)) {
@@ -474,10 +472,10 @@ public class HMTest1 {
             destructable.destroy();
         pass.destroy();
         sampler.destroy();
+        samplerNearest.destroy();
         map.destroy();
         shader.destroy();
 
-        pool.destroy();
         quad.destroy();
         cube.destroy();
         ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();

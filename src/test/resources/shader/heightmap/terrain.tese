@@ -10,6 +10,7 @@ layout (binding = 0) uniform Matrices {
     mat4 modelViewMatrix;
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
+layout (set = 1, binding = 1) uniform sampler2D heightmapSamplerNearest;
 
 layout (binding = 1) uniform HeightmapData {
     vec2 PositionOffset;
@@ -52,10 +53,10 @@ void main() {
         p01, p11,
         gl_TessCoord.xy
     );
+    const vec3 offset = -(inverse(modelViewMatrix) * vec4(0, 0, 0, 1)).xyz;
     const vec3 p3 = vec3(
         p,
-        // TODO
-        length(p) > (2048 * 2) ? sampleHmNearest(uvLerp) : sampleHm(uvLerp)
+        sampleHm(uvLerp, length(p + offset.xz) > (2048 * 2))
     ).xzy;
 
     // ======= OUTPUT VERT =======

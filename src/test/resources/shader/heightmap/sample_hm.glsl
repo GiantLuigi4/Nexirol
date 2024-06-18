@@ -1,4 +1,4 @@
-const int VERT = 4;
+const int VERT = 64;
 const int GRID = (64*VERT);
 const float VERT_SCALE= 3.0;
 
@@ -31,14 +31,26 @@ float sampleHm(vec2 uv) {
     return mix(heightRange.x, heightRange.y, height);
 }
 
+float sampleHm(vec2 uv, bool nearest) {
+    uv = clampToEdge(uv);
+    float height;
+    if (nearest) {
+        height = textureLod(heightmapSamplerNearest, uv, 0).x;
+    } else {
+        height = textureLod(heightmapSampler, uv, 0).x;
+    }
+    return mix(heightRange.x, heightRange.y, height);
+}
+
 float sampleHmNearest(vec2 uv) {
     uv = clampToEdge(uv);
-    const ivec2 tSize = textureSize(heightmapSampler, 0);
-    const vec2 iv = floor(uv * tSize);
-    const float height = texelFetch(heightmapSampler, (ivec2(
-            int(iv.x),
-            int(iv.y)
-    ) % tSize), 0).x;
+    const float height = textureLod(heightmapSamplerNearest, uv, 0).x;
+//    const ivec2 tSize = textureSize(heightmapSampler, 0);
+//    const vec2 iv = floor(uv * tSize);
+//    const float height = texelFetch(heightmapSampler, (ivec2(
+//            int(iv.x),
+//            int(iv.y)
+//    ) % tSize), 0).x;
     return mix(heightRange.x, heightRange.y, height);
 }
 //#endif

@@ -45,6 +45,27 @@ public class UniformData implements ReniDestructable {
     BufferDescriptor descriptor;
     ImageInfo[] samps;
 
+    public UniformData(DataLayout layout, int textureCount, ShaderStageFlags[] stages, int binding) {
+        this.format = null;
+        this.stages = stages;
+        this.binding = binding;
+        switch (layout) {
+            case COMBINED_TEXTURE_SAMPLER -> {
+            }
+            default -> throw new RuntimeException("Not supported");
+        }
+
+        info = new DescriptorLayoutInfo(
+                binding,
+                switch (layout) {
+                    case COMBINED_TEXTURE_SAMPLER -> DescriptorType.COMBINED_SAMPLED_IMAGE;
+                    default -> DescriptorType.UNIFORM_BUFFER;
+                },
+                textureCount, stages
+        );
+        samps = new ImageInfo[textureCount];
+    }
+
     public UniformData(boolean constant, DataLayout layout, DataFormat format, ShaderStageFlags[] stages, int binding) {
         this.format = format;
         this.stages = stages;

@@ -13,6 +13,7 @@ layout (binding = 1) uniform HeightmapData {
     vec2 heightRange;
 };
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
+layout (set = 1, binding = 1) uniform sampler2D heightmapSamplerNearest;
 
 // heightmap
 #define EXCLUDE_SAMPLE
@@ -36,14 +37,14 @@ void main() {
     const ivec2 xy = (vSize - ivec2(
         gl_InstanceIndex / vSize.x,
         gl_InstanceIndex % vSize.x
-    )) % vSize + PositionOffset / GRID;
+    )) % vSize;
     const vec2 POffset = (xy - vSize * 0.5) * GRID;
 
     // calculate UV
     const vec2 UV = vec2(
         gl_VertexIndex / V1,
         gl_VertexIndex % V1
-    ) * iVert;
+    ) * iVert + PositionOffset / vec2(GRID);
 
     // calculate scaled UV
     uv = (xy + UV) * iTSF * GRID;

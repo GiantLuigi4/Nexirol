@@ -17,6 +17,7 @@ layout (binding = 1) uniform HeightmapData {
 };
 
 layout (set = 1, binding = 0) uniform sampler2D heightmapSampler;
+layout (set = 1, binding = 1) uniform sampler2D heightmapSamplerNearest;
 
 // noise
 #include <shader/util/noise/hash.glsl>
@@ -36,7 +37,7 @@ const vec3 v101 = vec3(1.0, 0.0, 1.0);
 vec3 crd(const vec2 texel, const vec2 centre, const vec2 offset) {
     return wsCoord * v101 + vec3(
         offset.x,
-        sampleHm(centre + (offset * texel)),
+        sampleHm(centre + (offset * texel), gl_FragCoord.z > 0.9995),
         offset.y
     );
 }

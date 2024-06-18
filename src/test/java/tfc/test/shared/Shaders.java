@@ -114,18 +114,22 @@ public class Shaders {
     );
 
     public static final UniformData terrainTextureData = new UniformData(
-            false, DataLayout.COMBINED_TEXTURE_SAMPLER,
-            new DataFormat(
-                    new DataElement(
-                            NumericPrimitive.LONG,
-                            1
-                    )
-            ),
+            DataLayout.COMBINED_TEXTURE_SAMPLER,
+            1,
             new ShaderStageFlags[]{
                     ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT,
                     ShaderStageFlags.TESSELATION_EVALUATION, ShaderStageFlags.TESSELATION_CONTROL
             },
             0
+    );
+    public static final UniformData terrainTextureDataNearest = new UniformData(
+            DataLayout.COMBINED_TEXTURE_SAMPLER,
+            1,
+            new ShaderStageFlags[]{
+                    ShaderStageFlags.VERTEX, ShaderStageFlags.FRAGMENT,
+                    ShaderStageFlags.TESSELATION_EVALUATION, ShaderStageFlags.TESSELATION_CONTROL
+            },
+            1
     );
 
     public final SmartShader SKY;
@@ -243,7 +247,7 @@ public class Shaders {
                         )
                 },
                 matrices, heightmapData,
-                terrainTextureData
+                terrainTextureData, terrainTextureDataNearest
         );
         CUBE = new SmartShader(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
