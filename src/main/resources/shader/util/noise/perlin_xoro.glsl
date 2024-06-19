@@ -1,6 +1,10 @@
 // requires: hash.glsl
 // requires: xoroshiro.glsl
 
+#ifndef MAX_LOOPS
+#define MAX_LOOPS 8
+#endif
+
 float randXor(vec2 pos, const ivec2 seed) {
     pos = floor(pos);
     return nextFloat(reseed(
@@ -55,7 +59,7 @@ float modifiedPerlinNoise(const vec2 p, const int res, const vec2 seed) {
     int iCount = 0;
     const Rand xorSeedRand = reseed(Rand(floatBitsToInt(seed.x), floatBitsToInt(seed.y)), p.x, 0, p.y);
     ivec2 iSeed = floatBitsToInt(seed);
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < MAX_LOOPS; i++) {
         n += amp * simpleXorNoise(p, f, iSeed);
         f *= 2.;
         normK += amp;
@@ -68,3 +72,5 @@ float modifiedPerlinNoise(const vec2 p, const int res, const vec2 seed) {
     const float nf = n / normK;
     return nf * nf * nf * nf;
 }
+
+#undef MAX_LOOPS

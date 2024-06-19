@@ -80,8 +80,9 @@ public class HMTest1 {
 
         // === Create Heightmap Image ===
 //        int res = 2048 * 16;
-        int res = 2048 * 8;
-//        int res = 2048 * 4;
+//        int res = 2048 * 8;
+//        int res = 2048 * 6;
+        int res = 2048 * 4;
 //        int res = 256 * 4;
 //        int res = 64 * 64;
 //        int res = 1024;
@@ -154,7 +155,7 @@ public class HMTest1 {
                 formatSky, 1, 1, 1
         );
 
-        int GRID = 64;
+        int GRID = 128;
         QuadPointGrid quad = new QuadPointGrid(
                 ReniSetup.GRAPHICS_CONTEXT.getLogical(),
                 1, 1,
@@ -305,7 +306,7 @@ public class HMTest1 {
                     matrices.setF(0, Matrices.projection(
                             (float) Math.toRadians(45),
                             ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(),
-                            0.1f, 20000.0f
+                            0.1f, 10000.0f
                     ));
 
                     Matrix4f view = new Matrix4f();

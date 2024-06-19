@@ -4,7 +4,7 @@
 
 layout (quads, fractional_even_spacing, cw) in;
 
-// ======= UNIFORMS =======
+// ====== UNIFORMS ======
 layout (binding = 0) uniform Matrices {
     mat4 projectionMatrix;
     mat4 modelViewMatrix;
@@ -20,10 +20,11 @@ in gl_PerVertex {
     vec4 gl_Position;
 } gl_in[gl_MaxPatchVertices];
 
-// ======= INPUT DATA =======
+// ====== INPUT DATA ======
 layout (location = 0) in vec2[] uv;
+layout (location = 1) in vec3[] oSet;
 
-// ======= FRAGMENT DATA =======
+// ====== FRAGMENT DATA ======
 layout (location = 0) out vec3 wsCoordOut;
 layout (location = 1) out vec2 uvOut;
 
@@ -34,20 +35,20 @@ layout (location = 1) out vec2 uvOut;
 #include <shader/heightmap/sample_hm.glsl>
 
 void main() {
-    // ======= CONTROL POINTS =======
+    // ====== CONTROL POINTS ======
     const vec2 p00 = gl_in[0].gl_Position.xz;
     const vec2 p01 = gl_in[1].gl_Position.xz;
     const vec2 p10 = gl_in[2].gl_Position.xz;
     const vec2 p11 = gl_in[3].gl_Position.xz;
 
-    // ======= UV =======
+    // ====== UV ======
     const vec2 uvLerp = lerp(
         uv[0], uv[2],
         uv[1], uv[3],
         gl_TessCoord.xy
     );
 
-    // ======= POSITION =======
+    // ====== POSITION ======
     const vec2 p = lerp(
         p00, p10,
         p01, p11,
@@ -59,8 +60,8 @@ void main() {
         sampleHm(uvLerp, length(p + offset.xz) > (2048 * 2))
     ).xzy;
 
-    // ======= OUTPUT VERT =======
+    // ====== OUTPUT VERT ======
     wsCoordOut = p3;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(p3, 1.0);
+    gl_Position = projectionMatrix * vec4(mat3(modelViewMatrix) * (p3 + oSet[0]), 1.0);
     uvOut = uvLerp;
 }
