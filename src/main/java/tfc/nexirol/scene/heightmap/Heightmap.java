@@ -1,4 +1,4 @@
-package tfc.test.noise.hm;
+package tfc.nexirol.scene.heightmap;
 
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.renirol.frontend.enums.ImageLayout;

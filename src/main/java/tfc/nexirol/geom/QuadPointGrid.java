@@ -1,4 +1,4 @@
-package tfc.test.noise.geom;
+package tfc.nexirol.geom;
 
 import org.lwjgl.system.MemoryUtil;
 import tfc.renirol.frontend.enums.BufferUsage;
