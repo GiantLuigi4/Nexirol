@@ -19,7 +19,7 @@ import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.enums.flags.SwapchainUsage;
+import tfc.renirol.frontend.enums.flags.ImageUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
 import tfc.renirol.frontend.enums.modes.CullMode;
@@ -53,7 +53,7 @@ public class MultiAttachment {
         Image col;
         ReniSetup.GRAPHICS_CONTEXT.addBuffer(
                 col = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical())
-                        .setUsage(SwapchainUsage.COLOR),
+                        .setUsage(ImageUsage.COLOR),
                 false
         );
         col.create(
@@ -444,7 +444,7 @@ public class MultiAttachment {
         ReniSetup.GRAPHICS_CONTEXT.depthBuffer().destroy();
         pool.destroy();
         cube.destroy();
-        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
         shaders.destroy();
         desc0.destroy();
         pipeline1.destroy();

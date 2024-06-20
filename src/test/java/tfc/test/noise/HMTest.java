@@ -16,8 +16,8 @@ import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
+import tfc.renirol.frontend.enums.flags.ImageUsage;
 import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
-import tfc.renirol.frontend.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
 import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
@@ -64,7 +64,7 @@ public class HMTest {
         hmSize.set(4096 * 2, 4096 * 2);
         // === Setup Heightmap FBO ===
         Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
-        img.setUsage(SwapchainUsage.COLOR);
+        img.setUsage(ImageUsage.COLOR);
         img.create(hmSize.width(), hmSize.height(), VK13.VK_FORMAT_R16_UNORM);
         Attachment attachment = new Attachment(img, false, false);
         Framebuffer fbo = new Framebuffer(attachment);
@@ -228,7 +228,7 @@ public class HMTest {
                 shader.finishCompute(cmd);
 
                 cmd.end();
-                cmd.submit(
+                cmd.submitBlocking(
                         ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS),
                         StageMask.GRAPHICS
                 );
@@ -330,7 +330,7 @@ public class HMTest {
                         ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                         AccessMask.NONE,
                         AccessMask.DEPTH_WRITE,
-                        SwapchainUsage.DEPTH
+                        ImageUsage.DEPTH
                 );
 
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
@@ -409,7 +409,7 @@ public class HMTest {
                 ReniSetup.WINDOW.swapAndPollSize();
                 GLFWWindow.poll();
 
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+                ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
 
 //                try {
 //                    Thread.sleep(8);
@@ -424,7 +424,7 @@ public class HMTest {
         pool.destroy();
         quad.destroy();
         cube.destroy();
-        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
         shaders.destroy();
         desc0.destroy();
         pipeline1.destroy();

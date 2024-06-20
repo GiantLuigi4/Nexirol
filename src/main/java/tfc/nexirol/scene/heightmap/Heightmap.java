@@ -3,7 +3,7 @@ package tfc.nexirol.scene.heightmap;
 import org.lwjgl.vulkan.VkExtent2D;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
-import tfc.renirol.frontend.enums.flags.SwapchainUsage;
+import tfc.renirol.frontend.enums.flags.ImageUsage;
 import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.modes.image.FilterMode;
@@ -57,7 +57,7 @@ public class Heightmap implements ReniDestructable {
         this.img = img;
         this.fbo = fbo;
         this.pass = pass;
-        imgTmp = new Image(shader.device).setUsage(SwapchainUsage.COLOR);
+        imgTmp = new Image(shader.device).setUsage(ImageUsage.COLOR);
         imgTmp.create(
                 img.getExtents().width(), img.getExtents().height(),
                 img.getFormat()

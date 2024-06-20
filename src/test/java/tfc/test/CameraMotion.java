@@ -18,7 +18,7 @@ import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.enums.flags.SwapchainUsage;
+import tfc.renirol.frontend.enums.flags.ImageUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
 import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
@@ -404,7 +404,7 @@ public class CameraMotion {
                         ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                         AccessMask.NONE,
                         AccessMask.DEPTH_WRITE,
-                        SwapchainUsage.DEPTH
+                        ImageUsage.DEPTH
                 );
 
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
@@ -461,7 +461,7 @@ public class CameraMotion {
                 ReniSetup.WINDOW.swapAndPollSize();
                 GLFWWindow.poll();
 
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+                ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
             }
             buffer.destroy();
         } catch (Throwable err) {
@@ -470,7 +470,7 @@ public class CameraMotion {
 
         pool.destroy();
         cube.destroy();
-        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
         shaders.destroy();
         desc0.destroy();
         pipeline1.destroy();

@@ -15,8 +15,8 @@ import tfc.nexirol.scene.heightmap.Heightmap;
 import tfc.nexirol.scene.heightmap.HeightmapShader;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
+import tfc.renirol.frontend.enums.flags.ImageUsage;
 import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
-import tfc.renirol.frontend.enums.flags.SwapchainUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
 import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
@@ -87,7 +87,7 @@ public class HMTest1 {
 //        int res = 64 * 64;
 //        int res = 1024;
         Image img = new Image(ReniSetup.GRAPHICS_CONTEXT.getLogical());
-        img.setUsage(SwapchainUsage.COLOR, SwapchainUsage.SAMPLED);
+        img.setUsage(ImageUsage.COLOR, ImageUsage.SAMPLED);
         img.create(res, res, VK13.VK_FORMAT_R16_UNORM);
         Attachment attachment = new Attachment(img, false, false);
         Framebuffer fbo = new Framebuffer(attachment);
@@ -163,7 +163,7 @@ public class HMTest1 {
         );
         GRID *= 64;
 
-        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
 
         try {
             int frame = 0;
@@ -269,6 +269,7 @@ public class HMTest1 {
                 cmd.reset();
             }
 
+            ReniQueue queue = ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS);
             while (!ReniSetup.WINDOW.shouldClose()) {
                 frame++;
 
@@ -306,7 +307,7 @@ public class HMTest1 {
                     matrices.setF(0, Matrices.projection(
                             (float) Math.toRadians(45),
                             ReniSetup.WINDOW.getWidth(), ReniSetup.WINDOW.getHeight(),
-                            0.1f, 10000.0f
+                            0.1f, 15000.0f
                     ));
 
                     Matrix4f view = new Matrix4f();
@@ -358,7 +359,7 @@ public class HMTest1 {
                     map.updatePosition(cmd, mapX, mapY);
                     cmd.end();
                     cmd.submitAsync(
-                            ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS),
+                            queue,
                             StageMask.TOP_OF_PIPE
                     );
                 }
@@ -389,7 +390,7 @@ public class HMTest1 {
                         ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                         AccessMask.NONE,
                         AccessMask.DEPTH_WRITE,
-                        SwapchainUsage.DEPTH
+                        ImageUsage.DEPTH
                 );
 
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
@@ -445,7 +446,6 @@ public class HMTest1 {
 
                 buffer.end();
 
-                ReniQueue queue = ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS);
                 if (mapUpdated)
                     queue.await();
                 ReniSetup.GRAPHICS_CONTEXT.submitFrame(buffer);
@@ -453,8 +453,6 @@ public class HMTest1 {
 
                 ReniSetup.WINDOW.swapAndPollSize();
                 GLFWWindow.poll();
-
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
 
 //                try {
 //                    Thread.sleep(8);
@@ -479,7 +477,7 @@ public class HMTest1 {
 
         quad.destroy();
         cube.destroy();
-        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
         shaders.destroy();
         desc0.destroy();
         pipeline1.destroy();

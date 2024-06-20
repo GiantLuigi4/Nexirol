@@ -244,6 +244,17 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
+    public void setB(int index, byte x) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 1 || indexed.element.type != NumericPrimitive.BYTE)
+            throw new RuntimeException("Invalid element type.");
+        ByteBuffer fb = bytes.position(indexed.memoryOffset);
+        fb.put(0, x);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + 1);
+        bytes.position(0);
+    }
+
     public void setF(int index, float x, float y, float z, float w) {
         IndexedElement indexed = indexedElements[index];
         if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.FLOAT)

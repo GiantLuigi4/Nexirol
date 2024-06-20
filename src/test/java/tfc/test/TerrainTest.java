@@ -13,7 +13,7 @@ import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.ImageLayout;
 import tfc.renirol.frontend.enums.Operation;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
-import tfc.renirol.frontend.enums.flags.SwapchainUsage;
+import tfc.renirol.frontend.enums.flags.ImageUsage;
 import tfc.renirol.frontend.enums.format.AttributeFormat;
 import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.DynamicStateMasks;
@@ -247,7 +247,7 @@ public class TerrainTest {
                         ImageLayout.DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                         AccessMask.NONE,
                         AccessMask.DEPTH_WRITE,
-                        SwapchainUsage.DEPTH
+                        ImageUsage.DEPTH
                 );
 
                 buffer.startLabel("Main Pass", 0.5f, 0, 0, 0.5f);
