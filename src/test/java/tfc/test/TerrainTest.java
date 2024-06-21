@@ -305,7 +305,7 @@ public class TerrainTest {
                 ReniSetup.WINDOW.swapAndPollSize();
                 GLFWWindow.poll();
 
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+                ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
 
 //                try {
 //                    Thread.sleep(8);
@@ -320,7 +320,7 @@ public class TerrainTest {
         pool.destroy();
         quad.destroy();
         cube.destroy();
-        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
         shaders.destroy();
         desc0.destroy();
         pipeline1.destroy();

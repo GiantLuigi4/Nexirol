@@ -280,7 +280,7 @@ public class Skybox {
                 ReniSetup.WINDOW.swapAndPollSize();
                 GLFWWindow.poll();
 
-                ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+                ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
             }
             buffer.destroy();
         } catch (Throwable err) {
@@ -293,7 +293,7 @@ public class Skybox {
 //        layout.destroy();
         pool.destroy();
         cube.destroy();
-        ReniSetup.GRAPHICS_CONTEXT.getLogical().waitForIdle();
+        ReniSetup.GRAPHICS_CONTEXT.getLogical().await();
         for (ShaderAttachment skyAttachment : SKY_ATTACHMENTS) skyAttachment.destroy();
         SKY.destroy();
         desc0.destroy();

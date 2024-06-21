@@ -255,17 +255,114 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
-    public void setF(int index, float x, float y, float z, float w) {
+    public void setB(int index, byte x, byte y) {
         IndexedElement indexed = indexedElements[index];
-        if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.FLOAT)
+        if (indexed.element.size != 2 || indexed.element.type != NumericPrimitive.BYTE)
             throw new RuntimeException("Invalid element type.");
-        FloatBuffer fb = bytes.position(indexed.memoryOffset).asFloatBuffer();
+        ByteBuffer fb = bytes.position(indexed.memoryOffset);
+        fb.put(0, x);
+        fb.put(1, y);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + 2);
+        bytes.position(0);
+    }
+
+    public void setB(int index, byte x, byte y, byte z) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 3 || indexed.element.type != NumericPrimitive.BYTE)
+            throw new RuntimeException("Invalid element type.");
+        ByteBuffer fb = bytes.position(indexed.memoryOffset);
+        fb.put(0, x);
+        fb.put(1, y);
+        fb.put(2, z);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + 3);
+        bytes.position(0);
+    }
+
+    public void setB(int index, byte x, byte y, byte z, byte w) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.BYTE)
+            throw new RuntimeException("Invalid element type.");
+        ByteBuffer fb = bytes.position(indexed.memoryOffset);
+        fb.put(0, x);
+        fb.put(1, y);
+        fb.put(2, z);
+        fb.put(3, w);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + 4);
+        bytes.position(0);
+    }
+
+    public void setI(int index, int x) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 1 || indexed.element.type != NumericPrimitive.INT)
+            throw new RuntimeException("Invalid element type.");
+        IntBuffer fb = bytes.position(indexed.memoryOffset).asIntBuffer();
+        fb.put(0, x);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4));
+        bytes.position(0);
+    }
+
+    public void setI(int index, int x, int y) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 2 || indexed.element.type != NumericPrimitive.INT)
+            throw new RuntimeException("Invalid element type.");
+        IntBuffer fb = bytes.position(indexed.memoryOffset).asIntBuffer();
+        fb.put(0, x);
+        fb.put(1, y);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (2 * 4));
+        bytes.position(0);
+    }
+
+    public void setI(int index, int x, int y, int z) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 3 || indexed.element.type != NumericPrimitive.INT)
+            throw new RuntimeException("Invalid element type.");
+        IntBuffer fb = bytes.position(indexed.memoryOffset).asIntBuffer();
+        fb.put(0, x);
+        fb.put(1, y);
+        fb.put(2, z);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (3 * 4));
+        bytes.position(0);
+    }
+
+    public void setI(int index, int x, int y, int z, int w) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.INT)
+            throw new RuntimeException("Invalid element type.");
+        IntBuffer fb = bytes.position(indexed.memoryOffset).asIntBuffer();
         fb.put(0, x);
         fb.put(1, y);
         fb.put(2, z);
         fb.put(3, w);
         ulStart = Math.min(ulStart, indexed.memoryOffset);
         ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4 * 4));
+        bytes.position(0);
+    }
+
+    public void setF(int index, float f) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 1 || indexed.element.type != NumericPrimitive.FLOAT)
+            throw new RuntimeException("Invalid element type.");
+        bytes.position(indexed.memoryOffset).asFloatBuffer().put(0, f);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4));
+        bytes.position(0);
+    }
+
+    public void setF(int index, float x, float y) {
+        IndexedElement indexed = indexedElements[index];
+        if (indexed.element.size != 2 || indexed.element.type != NumericPrimitive.FLOAT)
+            throw new RuntimeException("Invalid element type.");
+        FloatBuffer fb = bytes.position(indexed.memoryOffset).asFloatBuffer();
+        fb.put(0, x);
+        fb.put(1, y);
+        ulStart = Math.min(ulStart, indexed.memoryOffset);
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (2 * 4));
         bytes.position(0);
     }
 
@@ -282,27 +379,17 @@ public class UniformData implements ReniDestructable {
         bytes.position(0);
     }
 
-    public void setF(int index, float x, float y) {
+    public void setF(int index, float x, float y, float z, float w) {
         IndexedElement indexed = indexedElements[index];
-        if (indexed.element.size != 2 || indexed.element.type != NumericPrimitive.FLOAT)
+        if (indexed.element.size != 4 || indexed.element.type != NumericPrimitive.FLOAT)
             throw new RuntimeException("Invalid element type.");
         FloatBuffer fb = bytes.position(indexed.memoryOffset).asFloatBuffer();
         fb.put(0, x);
         fb.put(1, y);
+        fb.put(2, z);
+        fb.put(3, w);
         ulStart = Math.min(ulStart, indexed.memoryOffset);
-        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (2 * 4));
-        bytes.position(0);
-    }
-
-    public void setI(int index, int x, int y) {
-        IndexedElement indexed = indexedElements[index];
-        if (indexed.element.size != 2 || indexed.element.type != NumericPrimitive.INT)
-            throw new RuntimeException("Invalid element type.");
-        IntBuffer fb = bytes.position(indexed.memoryOffset).asIntBuffer();
-        fb.put(0, x);
-        fb.put(1, y);
-        ulStart = Math.min(ulStart, indexed.memoryOffset);
-        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (2 * 4));
+        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4 * 4));
         bytes.position(0);
     }
 
@@ -327,16 +414,6 @@ public class UniformData implements ReniDestructable {
         fb.put(3, quat.w);
         ulStart = Math.min(ulStart, indexed.memoryOffset);
         ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4 * 4));
-        bytes.position(0);
-    }
-
-    public void setF(int index, float f) {
-        IndexedElement indexed = indexedElements[index];
-        if (indexed.element.size != 1 || indexed.element.type != NumericPrimitive.FLOAT)
-            throw new RuntimeException("Invalid element type.");
-        bytes.position(indexed.memoryOffset).asFloatBuffer().put(0, f);
-        ulStart = Math.min(ulStart, indexed.memoryOffset);
-        ulEnd = Math.max(ulEnd, indexed.memoryOffset + (4));
         bytes.position(0);
     }
 
