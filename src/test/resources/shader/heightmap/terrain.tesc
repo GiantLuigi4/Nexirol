@@ -67,7 +67,7 @@ void main() {
 
         // TODO: make this operate on a box defined by these coordinates?
         const vec2 minX = min(min(pS0.xy, pS1.xy), min(pS2.xy, pS3.xy));
-        const vec3 maxX = max(max(pS0.xyz, pS1.xyz), max(pS2.xyz, pS3.xyz));
+        const vec4 maxX = max(max(pS0, pS1), max(pS2, pS3));
         const float margin = 2.0;
         // ====== TESSELATION LEVEL ======
         vec4 tessLevel;
@@ -76,7 +76,8 @@ void main() {
             minX.x > margin||
             maxX.y < -margin ||
             minX.y > margin||
-            maxX.z < -1.2
+            maxX.z < -1.2 ||
+            maxX.w < -0.1
         ) {
             tessLevel = vec4(0);
         } else {

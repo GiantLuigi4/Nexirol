@@ -25,6 +25,7 @@ const int V1 = VERT + 1;
 
 out gl_PerVertex {
     vec4 gl_Position;
+    float gl_CullDistance[2];
 };
 
 // TODO: ideally, the world translates instead of the camera
@@ -54,4 +55,38 @@ void main() {
     const float height = sampleHmNearest(uv);
 
     gl_Position = vec4(vPos.x, height, vPos.y, 1.0);
+
+    {
+        const vec4 MIN_TESS_LEVEL = vec4(1);
+        const vec4 MAX_TESS_LEVEL = vec4(64);
+        const float MIN_DISTANCE = 64;
+        const float MAX_DISTANCE = 2048 * 2;
+        const float mm = 1. / (MAX_DISTANCE - MIN_DISTANCE);
+
+        // ====== CALCULATE VIEW OFFSET ======
+        const vec3 offset = -(inverse(modelViewMatrix) * vec4(0, 0, 0, 1)).xyz;
+        // ====== OFFSET POSITIONS ======
+        const vec3 eyeSpacePos00 = gl_Position.xyz + offset;
+
+        // ====== CALCULATE SS POSITIONS ======
+        const mat4 cMat = projectionMatrix * modelViewMatrix;
+        vec4 pS0 = cMat * gl_Position;
+        pS0.xyz /= pS0.w;
+
+        const float margin = 2.0;
+        // ====== CULL ======
+        if (
+            pS0.x < -margin ||
+            pS0.x > margin||
+            pS0.y < -margin ||
+            pS0.y > margin||
+            pS0.z < -1.2 ||
+            pS0.w < -0.1
+        ) gl_CullDistance[0] = -1;
+        else gl_CullDistance[0] = 1;
+
+        // ====== TESS LEVEL ======
+        const float dist = clamp((abs(length(eyeSpacePos00)) - MIN_DISTANCE) * mm, 0.0, 1.0);
+        gl_CullDistance[1] = dist * gl_CullDistance[0];
+    }
 }
