@@ -8,6 +8,7 @@ import tfc.renirol.frontend.enums.BufferUsage;
 import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.flags.AdvanceRate;
 import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
+import tfc.renirol.frontend.enums.format.AttributeFormat;
 import tfc.renirol.frontend.enums.masks.AccessMask;
 import tfc.renirol.frontend.enums.masks.StageMask;
 import tfc.renirol.frontend.enums.prims.NumericPrimitive;
@@ -67,6 +68,10 @@ public class UniformData implements ReniDestructable {
     }
 
     public UniformData(boolean constant, DataLayout layout, DataFormat format, ShaderStageFlags[] stages, int binding) {
+        this(constant, layout, format, stages, binding, 0);
+    }
+
+    public UniformData(boolean constant, DataLayout layout, DataFormat format, ShaderStageFlags[] stages, int binding, int location) {
         this.format = format;
         this.stages = stages;
         this.binding = binding;
@@ -99,8 +104,10 @@ public class UniformData implements ReniDestructable {
                             layout == DataLayout.INSTANCE
             ) {
                 int strideDiv = 1;
+                boolean single = false;
                 if (format.elements.isStart() && format.elements.isEnd()) {
                     strideDiv = format.elements.value.arrayCount;
+                    single = true;
                 }
 
                 descriptor = new BufferDescriptor(
@@ -110,14 +117,29 @@ public class UniformData implements ReniDestructable {
                     case INSTANCE -> AdvanceRate.PER_INSTANCE;
                     default -> throw new RuntimeException("HUH???");
                 });
-                descriptor.describe(
-                        binding,
-                        ((indexedElements[indexedElements.length - 1].memoryOffset + (
-                                indexedElements[indexedElements.length - 1].element.size *
-                                        indexedElements[indexedElements.length - 1].element.type.size))
-                                / strideDiv
-                        )
-                );
+                if (single) {
+                    descriptor.describe(
+                            binding,
+                            ((indexedElements[indexedElements.length - 1].memoryOffset + (
+                                    indexedElements[indexedElements.length - 1].element.size *
+                                            indexedElements[indexedElements.length - 1].element.type.size))
+                                    / strideDiv
+                            )
+                    );
+                } else descriptor.describe(binding, format.stride);
+
+                int idx = location;
+                for (IndexedElement element : elements) {
+                    descriptor.attribute(
+                            binding,
+                            idx++,
+                            AttributeFormat.format(
+                                    element.element.size,
+                                    element.element.type
+                            ),
+                            element.memoryOffset
+                    );
+                }
             } else {
                 info = new DescriptorLayoutInfo(
                         binding,

@@ -28,7 +28,7 @@ import tfc.renirol.frontend.enums.modes.image.MipmapMode;
 import tfc.renirol.frontend.enums.modes.image.WrapMode;
 import tfc.renirol.frontend.enums.prims.NumericPrimitive;
 import tfc.renirol.frontend.hardware.device.ReniQueueType;
-import tfc.renirol.frontend.rendering.ReniQueue;
+import tfc.renirol.frontend.hardware.device.queue.ReniQueue;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;

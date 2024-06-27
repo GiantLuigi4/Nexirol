@@ -12,6 +12,7 @@ import tfc.renirol.frontend.hardware.device.Vendors;
 import tfc.renirol.frontend.hardware.device.feature.DynamicRendering;
 import tfc.renirol.frontend.hardware.device.support.image.ReniSwapchainCapabilities;
 import tfc.renirol.frontend.hardware.util.DeviceQuery;
+import tfc.renirol.frontend.hardware.util.QueueRequest;
 import tfc.renirol.frontend.hardware.util.ReniHardwareCapability;
 import tfc.renirol.frontend.rendering.framebuffer.chain.SwapChain;
 import tfc.renirol.frontend.rendering.selectors.ChannelInfo;
@@ -89,12 +90,15 @@ public class ReniSetup {
                                 .enable(KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME)
                                 // TODO: should probably support shared pairs
                                 // i.e. split(shared(GRAPHICS, TRANSFER), shared(COMPUTE, TRANSFER))
-                                .requestSharedIndices(
-                                        // if compute pipeline is supported, then use it
-                                        // elsewise, do not
-                                        ReniHardwareCapability.SUPPORTS_INDICES.configured(ReniQueueType.COMPUTE).supportQuery.test(GRAPHICS_CONTEXT.getHardware()) ?
-                                                new ReniQueueType[]{ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER, ReniQueueType.COMPUTE} :
-                                                new ReniQueueType[]{ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER}
+                                .requestIndices(
+                                        QueueRequest.EITHER(
+                                                QueueRequest.SPLIT(
+                                                        QueueRequest.SHARED(ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER),
+                                                        QueueRequest.SHARED(ReniQueueType.COMPUTE, ReniQueueType.TRANSFER)
+                                                ),
+                                                QueueRequest.SHARED(ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER, ReniQueueType.COMPUTE),
+                                                QueueRequest.SHARED(ReniQueueType.GRAPHICS, ReniQueueType.TRANSFER)
+                                        )
                                 )
                                 .with(DynamicRendering.INSTANCE)
                 ).create()
