@@ -17,7 +17,7 @@ public class ImportProcessor extends PreProcessor {
 	public List<Line> transform(List<Line> input) {
 		List<Line> output = new ArrayList<>();
 		for (Line line : input) {
-			if (line.startsWith("#include")) {
+			if (line.trim().startsWith("#include")) {
 				String text = line.trim().substring("#include".length()).trim();
 				
 				if (!(text.startsWith("<") && text.endsWith(">")))

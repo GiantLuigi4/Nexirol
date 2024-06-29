@@ -467,7 +467,7 @@ public class UniformData implements ReniDestructable {
             bytes.position(0).limit(ulEnd);
 
             // TODO: should use a submit queue and copy from a temporary submission buffer to the main buffer or smth
-            buffer.bufferBarrier(
+            buffer.transitionBuffer(
                     this.buffer,
                     StageMask.GRAPHICS, StageMask.TRANSFER,
                     mask, AccessMask.TRANSFER_WRITE
@@ -476,7 +476,7 @@ public class UniformData implements ReniDestructable {
                     this.buffer, ulStart,
                     (ulEnd - ulStart), bytes
             );
-            buffer.bufferBarrier(
+            buffer.transitionBuffer(
                     this.buffer,
                     StageMask.TRANSFER, StageMask.GRAPHICS,
                     AccessMask.TRANSFER_WRITE, mask

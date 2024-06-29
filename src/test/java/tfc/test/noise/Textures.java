@@ -100,7 +100,7 @@ public class Textures {
             ReniSetup.WINDOW.grabContext();
             final CommandBuffer buffer = CommandBuffer.create(
                     ReniSetup.GRAPHICS_CONTEXT.getLogical(),
-                    ReniQueueType.GRAPHICS, true,
+                    ReniSetup.GRAPHICS_CONTEXT.getLogical().getQueueFamily(ReniQueueType.GRAPHICS), true,
                     false
             );
             buffer.clearColor(0, 0, 0, 1);
@@ -173,7 +173,7 @@ public class Textures {
 
                 buffer.end();
 
-                ReniSetup.GRAPHICS_CONTEXT.submitFrame(buffer);
+                ReniSetup.GRAPHICS_CONTEXT.submitFrame(ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS), buffer);
                 ReniSetup.GRAPHICS_CONTEXT.getLogical().getStandardQueue(ReniQueueType.GRAPHICS).await();
 
                 ReniSetup.WINDOW.swapAndPollSize();

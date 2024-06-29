@@ -5,6 +5,7 @@ import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
 import tfc.renirol.frontend.hardware.device.ReniLogicalDevice;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
+import tfc.renirol.frontend.rendering.command.pipeline.ComputePipelineState;
 import tfc.renirol.frontend.rendering.command.pipeline.GraphicsPipeline;
 import tfc.renirol.frontend.rendering.command.pipeline.PipelineState;
 import tfc.renirol.frontend.rendering.command.shader.Shader;
@@ -188,5 +189,18 @@ public class SmartShader implements ReniDestructable {
         collected.addAll(Arrays.asList(descriptors));
         collected.addAll(Arrays.asList(this.descriptors));
         state.vertexInput(collected.toArray(new BufferDescriptor[0]));
+    }
+
+    public void bind(ComputePipelineState state) {
+        DescriptorLayout[] layouts = new DescriptorLayout[
+                1 + (layoutCTS != null ? 1 : 0)
+        ];
+        layouts[0] = layout;
+        int idx = 1;
+        if (layoutCTS != null)
+            //noinspection UnusedAssignment
+            layouts[idx++] = layoutCTS;
+
+        state.descriptorLayouts(layouts);
     }
 }

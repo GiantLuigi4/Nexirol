@@ -11,13 +11,13 @@ vec4 screenToWorld(mat4 model, mat4 proj, in float depth, in vec2 uv) {
 
 // https://wickedengine.net/2019/09/22/improved-normal-reconstruction-from-depth/
 vec3 calculateNormal(mat4 model, mat4 proj, vec2 texCoord, vec2 texel, sampler2D depth) {
-    float d = texture2D(depth, texCoord).r;
+    float d = textureLod(depth, texCoord, 0).r;
     if (d == 1) return vec3(0);
 
-    float d0 = texture2D(depth, texCoord + vec2(texel.x, 0)).r;
-    float d1 = texture2D(depth, texCoord - vec2(texel.x, 0)).r;
-    float d2 = texture2D(depth, texCoord + vec2(0, texel.y)).r;
-    float d3 = texture2D(depth, texCoord - vec2(0, texel.y)).r;
+    float d0 = textureLod(depth, texCoord + vec2(texel.x, 0), 0).r;
+    float d1 = textureLod(depth, texCoord - vec2(texel.x, 0), 0).r;
+    float d2 = textureLod(depth, texCoord + vec2(0, texel.y), 0).r;
+    float d3 = textureLod(depth, texCoord - vec2(0, texel.y), 0).r;
 
     #ifdef NORMALS_FAST
 //        if (d0 == 1 && d1 == 1 && d2 == 1 && d3 == 1) return vec3(0);
