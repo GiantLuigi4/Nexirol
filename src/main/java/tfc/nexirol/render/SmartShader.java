@@ -3,6 +3,7 @@ package tfc.nexirol.render;
 import tfc.renirol.frontend.enums.BindPoint;
 import tfc.renirol.frontend.enums.DescriptorType;
 import tfc.renirol.frontend.enums.flags.DescriptorPoolFlags;
+import tfc.renirol.frontend.enums.flags.ShaderStageFlags;
 import tfc.renirol.frontend.hardware.device.ReniLogicalDevice;
 import tfc.renirol.frontend.rendering.command.CommandBuffer;
 import tfc.renirol.frontend.rendering.command.pipeline.ComputePipelineState;
@@ -36,7 +37,7 @@ public class SmartShader implements ReniDestructable {
     UniformData[] vbos;
     UniformData[] samplers;
 
-    UniformData constants;
+    UniformData[] constants;
 
     public SmartShader(
             ReniLogicalDevice device,
@@ -48,6 +49,7 @@ public class SmartShader implements ReniDestructable {
         ArrayList<BufferDescriptor> descs = new ArrayList<>();
         ArrayList<UniformData> samplers = new ArrayList<>();
         ArrayList<DescriptorLayoutInfo> sampInfos = new ArrayList<>();
+        ArrayList<UniformData> constDats = new ArrayList<>();
         for (UniformData datum : data)
             if (datum.samps != null) {
                 samplers.add(datum);
@@ -58,12 +60,13 @@ public class SmartShader implements ReniDestructable {
             } else if (datum.info != null)
                 infos.add(datum.info);
             else
-                constants = datum;
+                constDats.add(datum);
         this.infos = infos.toArray(new DescriptorLayoutInfo[0]);
         this.vbos = vbo.toArray(new UniformData[0]);
         this.descriptors = descs.toArray(new BufferDescriptor[0]);
         this.samplers = samplers.toArray(new UniformData[0]);
         this.sampInfos = sampInfos.toArray(new DescriptorLayoutInfo[0]);
+        if (!constDats.isEmpty()) this.constants = constDats.toArray(new UniformData[0]);
 
         int sets = 1;
         if (!samplers.isEmpty()) sets++;
@@ -111,8 +114,6 @@ public class SmartShader implements ReniDestructable {
     }
 
     public void destroy() {
-        if (constants != null)
-            constants.destroy();
         pool.destroy();
         layout.destroy();
         if (layoutCTS != null)
@@ -162,12 +163,14 @@ public class SmartShader implements ReniDestructable {
         }
 
         if (constants != null) {
-            buffer.pushConstants(
-                    pipeline.layout.handle,
-                    constants.stages,
-                    0, constants.bytes.capacity(),
-                    constants.bytes.position(0).limit(constants.bytes.capacity())
-            );
+            for (UniformData constant : constants) {
+                buffer.pushConstants(
+                        pipeline.layout.handle,
+                        constant.stages,
+                        0, constant.bytes.capacity(),
+                        constant.bytes.position(0).limit(constant.bytes.capacity())
+                );
+            }
         }
         for (UniformData vbo : vbos) {
             buffer.bindVbo(vbo.binding, vbo.buffer);
@@ -177,12 +180,22 @@ public class SmartShader implements ReniDestructable {
     public void bind(PipelineState state, BufferDescriptor... descriptors) {
         DescriptorLayout[] layouts = new DescriptorLayout[
                 1 + (layoutCTS != null ? 1 : 0)
-        ];
+                ];
         layouts[0] = layout;
         int idx = 1;
         if (layoutCTS != null)
             //noinspection UnusedAssignment
             layouts[idx++] = layoutCTS;
+
+        state.clearConstant();
+        if (constants != null) {
+            for (UniformData constant : constants) {
+                int stageValue = 0;
+                for (ShaderStageFlags stage : constant.stages)
+                    stageValue |= stage.bits;
+                state.constantBuffer(stageValue, constant.format.stride);
+            }
+        }
 
         state.descriptorLayouts(layouts);
         ArrayList<BufferDescriptor> collected = new ArrayList<>();
@@ -194,7 +207,7 @@ public class SmartShader implements ReniDestructable {
     public void bind(ComputePipelineState state) {
         DescriptorLayout[] layouts = new DescriptorLayout[
                 1 + (layoutCTS != null ? 1 : 0)
-        ];
+                ];
         layouts[0] = layout;
         int idx = 1;
         if (layoutCTS != null)

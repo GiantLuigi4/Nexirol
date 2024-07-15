@@ -90,3 +90,38 @@ vec4 quatFromRotation(const float angle, const float x, const float y, const flo
 
 /* gets the conjugate of the quaternion */
 vec4 conj(vec4 quat) {return vec4(-quat.xyz, quat.w);}
+
+mat4 quat_matrix(vec4 quat) {
+    float w2 = quat.w * quat.w, x2 = quat.x * quat.x;
+    float y2 = quat.y * quat.y, z2 = quat.z * quat.z;
+    float zw = quat.z * quat.w, dzw = zw + zw, xy = quat.x * quat.y, dxy = xy + xy;
+    float xz = quat.x * quat.z, dxz = xz + xz, yw = quat.y * quat.w, dyw = yw + yw;
+    float yz = quat.y * quat.z, dyz = yz + yz, xw = quat.x * quat.w, dxw = xw + xw;
+    float rm00 = w2 + x2 - z2 - y2;
+    float rm01 = dxy + dzw;
+    float rm02 = dxz - dyw;
+    float rm10 = -dzw + dxy;
+    float rm11 = y2 - z2 + w2 - x2;
+    float rm12 = dyz + dxw;
+    float rm20 = dyw + dxz;
+    float rm21 = dyz - dxw;
+    float rm22 = z2 - y2 - x2 + w2;
+    float nm00 = 1 * rm00 + 0 * rm01 + 0 * rm02;
+    float nm01 = 0 * rm00 + 1 * rm01 + 0 * rm02;
+    float nm02 = 0 * rm00 + 0 * rm01 + 1 * rm02;
+    float nm03 = 1 * rm00 + 1 * rm01 + 1 * rm02;
+    float nm10 = 1 * rm10 + 0 * rm11 + 0 * rm12;
+    float nm11 = 0 * rm10 + 1 * rm11 + 0 * rm12;
+    float nm12 = 0 * rm10 + 0 * rm11 + 1 * rm12;
+    float nm13 = 1 * rm10 + 1 * rm11 + 1 * rm12;
+    float nm20 = 1 * rm20 + 0 * rm21 + 0 * rm22;
+    float nm21 = 0 * rm20 + 1 * rm21 + 0 * rm22;
+    float nm22 = 0 * rm20 + 0 * rm21 + 1 * rm22;
+    float nm23 = 1 * rm20 + 1 * rm21 + 1 * rm22;
+    return mat4(
+        nm00, nm01, nm02, nm03,
+        nm10, nm11, nm12, nm13,
+        nm20, nm21, nm22, nm23,
+        0, 0, 0, 1
+    );
+}
